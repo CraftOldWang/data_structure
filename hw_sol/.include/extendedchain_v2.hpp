@@ -14,7 +14,6 @@ public:
     }
 };
 
-
 template <class T>
 class extendedChain {
 
@@ -25,12 +24,12 @@ private:
 public:
     class iterator { // 似乎还不能自动检查边界....
     public:
-        iterator(Node<T> *theNode);
-        T &operator*() const;
+        iterator(Node<T>* theNode);
+        T& operator*() const;
 
-        T *operator->() const;
+        T* operator->() const;
 
-        typename extendedChain<T>::iterator &operator++();
+        typename extendedChain<T>::iterator& operator++();
 
         extendedChain<T>::iterator operator++(int);
 
@@ -49,35 +48,35 @@ public:
     extendedChain();
     ~extendedChain();
 
-    void insert(const T &data, int index);
-    T &get(int index) const;
+    void insert(const T& data, int index);
+    T& get(int index) const;
 
-    void push_back(const T &data);
+    void push_back(const T& data);
     void print_chain() const;
-    void Node_push_back(Node<T> *newnode);
+    void Node_push_back(Node<T>* newnode);
     void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b);
     bool empty() { return bool(listsize); }
     int size() { return listsize; }
+    void is_head(Node<T>* p) { return p == head; }
+    void remove(int index);
 
     iterator begin();
     iterator end();
-    
-    
 };
 
-template<class T>
+template <class T>
 extendedChain<T>::iterator::iterator(Node<T>* theNode = nullptr)
     : node(theNode)
 {
 }
 
-template<class T>
+template <class T>
 T& extendedChain<T>::iterator::operator*() const { return node->data; }
 
-template<class T>
+template <class T>
 T* extendedChain<T>::iterator::operator->() const { return &node->data; }
 
-template<class T>   
+template <class T>
 typename extendedChain<T>::iterator& extendedChain<T>::iterator::operator++()
 {
     node = node->next;
@@ -87,7 +86,7 @@ typename extendedChain<T>::iterator& extendedChain<T>::iterator::operator++()
 // 这个old , 在函数结束后old 还能用?? 并不, 这里是以值的方式返回,
 // 会copy一个old...old 本身被销毁了.(或者返回值优化, 直接返回old
 // 而不是copy然后销毁old)
-template<class T>
+template <class T>
 extendedChain<T>::iterator extendedChain<T>::iterator::operator++(int)
 {
     iterator old = *this;
@@ -95,14 +94,14 @@ extendedChain<T>::iterator extendedChain<T>::iterator::operator++(int)
     return old;
 }
 
-template<class T>
+template <class T>
 extendedChain<T>::iterator extendedChain<T>::iterator::operator--()
 {
     node = node->prev;
     return *this; // 返回这个迭代器而不是node
 }
 
-template<class T>
+template <class T>
 extendedChain<T>::iterator extendedChain<T>::iterator::operator--(int)
 {
     iterator old = *this;
@@ -110,14 +109,13 @@ extendedChain<T>::iterator extendedChain<T>::iterator::operator--(int)
     return old;
 }
 
-template<class T>
+template <class T>
 bool extendedChain<T>::iterator::operator!=(const iterator right) { return node != right.node; }
 
-template<class T>
+template <class T>
 bool extendedChain<T>::iterator::operator==(const iterator right) { return node == right.node; }
 
-
-template<class T>
+template <class T>
 extendedChain<T>::extendedChain()
     : listsize(0)
 {
@@ -126,8 +124,7 @@ extendedChain<T>::extendedChain()
     head->prev = head;
 }
 
-
-template<class T>
+template <class T>
 extendedChain<T>::~extendedChain()
 {
     Node<T>* cur = head->next;
@@ -139,8 +136,7 @@ extendedChain<T>::~extendedChain()
     delete head;
 }
 
-
-template<class T>
+template <class T>
 void extendedChain<T>::insert(const T& data, int index)
 {
     if (index > listsize || index < 0) {
@@ -187,7 +183,7 @@ void extendedChain<T>::insert(const T& data, int index)
     listsize++;
 }
 
-template<class T>
+template <class T>
 T& extendedChain<T>::get(int index) const
 {
     if (index < 0 || index >= listsize) {
@@ -208,7 +204,7 @@ T& extendedChain<T>::get(int index) const
     return cur->data;
 }
 
-template<class T>
+template <class T>
 void extendedChain<T>::push_back(const T& data)
 {
     Node<T>* newnode = new Node<T>(data);
@@ -226,18 +222,18 @@ void extendedChain<T>::push_back(const T& data)
     listsize++;
 }
 
-template<class T>
+template <class T>
 extendedChain<T>::iterator extendedChain<T>::begin() { return iterator(head->next); }
 
-template<class T>
+template <class T>
 extendedChain<T>::iterator extendedChain<T>::end() { return iterator(head); }
 
-template<class T>
+template <class T>
 void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
 {
     a = new extendedChain<T>();
     b = new extendedChain<T>();
-    //因为是成员函数, 所以可以获得head指针
+    // 因为是成员函数, 所以可以获得head指针
     Node<T>* cur = head->next;
     Node<T>* temp = cur;
 
@@ -245,8 +241,7 @@ void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
         temp = cur->next;
         a->Node_push_back(cur);
         cur = temp;
-        if(cur != this->end())
-        {
+        if (cur != this->end()) {
             temp = cur->next;
             b->Node_push_back(cur);
             cur = temp;
@@ -254,10 +249,9 @@ void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
     }
     head->next = head;
     head->prev = head;
-
 }
 
-template<class T>
+template <class T>
 void extendedChain<T>::print_chain() const
 {
     bool is_first = true;
@@ -274,7 +268,7 @@ void extendedChain<T>::print_chain() const
     cout << endl;
 }
 
-template<class T>
+template <class T>
 void extendedChain<T>::Node_push_back(Node<T>* newnode)
 {
     if (head->next == head) {
