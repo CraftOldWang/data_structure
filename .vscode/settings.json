@@ -48,6 +48,8 @@
         "utility": "cpp",
         "numbers": "cpp",
         "stdexcept": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "list": "cpp",
+        "forward_list": "cpp"
     }
 }
