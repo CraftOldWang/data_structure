@@ -50,6 +50,7 @@
         "stdexcept": "cpp",
         "typeinfo": "cpp",
         "list": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "insertion_sort": "cpp"
     }
 }

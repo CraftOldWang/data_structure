@@ -2,6 +2,9 @@
 #include"extendedchain.hpp"
 using namespace std;
 
+
+//TODO还没完成
+
 template<class T>
 class rowElement
 {
@@ -51,7 +54,7 @@ public:
 
     int get(int row, int col)
     {
-
+        
     }
 
     void transpose(linkedMatrix& b)
