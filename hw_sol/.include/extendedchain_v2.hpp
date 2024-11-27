@@ -1,4 +1,4 @@
-
+// 有头节点的双向链表
 template <class T>
 class Node {
 public:
@@ -29,13 +29,13 @@ public:
 
         T* operator->() const;
 
-        typename extendedChain<T>::iterator& operator++();
+        iterator& operator++();
 
-        extendedChain<T>::iterator operator++(int);
+        iterator operator++(int);
 
-        extendedChain<T>::iterator operator--();
+        iterator operator--();
 
-        extendedChain<T>::iterator operator--(int);
+        iterator operator--(int);
 
         bool operator!=(const iterator right);
 
@@ -48,17 +48,24 @@ public:
     extendedChain();
     ~extendedChain();
 
-    void insert(const T& data, int index);
-    T& get(int index) const;
-
+    
     void push_back(const T& data);
-    void print_chain() const;
-    void Node_push_back(Node<T>* newnode);
-    void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b);
+    void insert(const T& data, int index);
+    void insert(const T& data, iterator it);
+    T& get(int index) const;
+    void remove(int index);
+    void remove(iterator it);
+
     bool empty() { return bool(listsize); }
     int size() { return listsize; }
     void is_head(Node<T>* p) { return p == head; }
-    void remove(int index);
+    
+    void print_chain() const;
+    void Node_push_back(Node<T>* newnode);
+    void split(extendedChain<T>*& a, extendedChain<T>*& b);
+
+    
+
 
     iterator begin();
     iterator end();
@@ -183,6 +190,25 @@ void extendedChain<T>::insert(const T& data, int index)
     listsize++;
 }
 
+//如原来的顺序为A->B;
+//插入C时, it指向B, 那么插入后的顺序为A->C->B
+//如果it是end()指向的位置, 那么插入后的顺序为A->B->C    
+//从而实现能在n+1个位置插入(n为链表长度)
+template<class T>
+void extendedChain<T>::insert(const T& data,  iterator it)
+{
+    if(it == end())
+    {
+        push_back(data);
+        return;
+    }
+    Node<T>* newnode = new Node<T>(data);
+    newnode->next = it.node;
+    newnode->prev = it.node->prev;
+    it.node->prev->next = newnode;
+    it.node->prev = newnode;
+
+}
 template <class T>
 T& extendedChain<T>::get(int index) const
 {
@@ -284,3 +310,35 @@ void extendedChain<T>::Node_push_back(Node<T>* newnode)
     }
     listsize++;
 }
+
+
+template <class T>
+void extendedChain<T>::remove(int index)
+{
+    if(index >= listsize || index <0 ){
+        throw "remove out of range";
+    }
+
+    Node<T>* cur = head;
+    for(int i=0;i<index;i++){
+        cur = cur->next;
+    }
+
+    cur->prev->next = cur->next;
+    cur->next->prev = cur->prev;
+    delete cur;
+}
+
+template <class T>
+void extendedChain<T>::remove(iterator it)
+{
+    if(it == end())
+    {
+        throw "remove out of range";
+    }
+    it.node->prev->next = it.node->next;
+    it.node->next->prev = it.node->prev;
+    delete it.node;
+    listsize--;
+}
+

@@ -1,3 +1,6 @@
+
+
+//有头尾指针的单向链表
 template <class T>
 class extendedChain {
 public:
@@ -103,6 +106,9 @@ public:
         }
         listsize++;
     }
+    
+    
+    
     T& get(int index) const
     {
         if (index < 0 || index >= listsize) {
