@@ -1,3 +1,5 @@
+#include<iostream>
+using namespace std;
 // 有头节点的双向链表
 template <class T>
 class Node {
@@ -24,7 +26,7 @@ private:
 public:
     class iterator { // 似乎还不能自动检查边界....
     public:
-        iterator(Node<T>* theNode);
+        iterator(Node<T>* theNode = nullptr);
         T& operator*() const;
 
         T* operator->() const;
@@ -41,7 +43,7 @@ public:
 
         bool operator==(const iterator right);
 
-    protected:
+    
         Node<T>* node;
     };
 
@@ -59,7 +61,7 @@ public:
     bool empty() { return bool(listsize); }
     int size() { return listsize; }
     void is_head(Node<T>* p) { return p == head; }
-    
+
     void print_chain() const;
     void Node_push_back(Node<T>* newnode);
     void split(extendedChain<T>*& a, extendedChain<T>*& b);
@@ -72,7 +74,7 @@ public:
 };
 
 template <class T>
-extendedChain<T>::iterator::iterator(Node<T>* theNode = nullptr)
+extendedChain<T>::iterator::iterator(Node<T>* theNode )
     : node(theNode)
 {
 }
@@ -94,7 +96,7 @@ typename extendedChain<T>::iterator& extendedChain<T>::iterator::operator++()
 // 会copy一个old...old 本身被销毁了.(或者返回值优化, 直接返回old
 // 而不是copy然后销毁old)
 template <class T>
-extendedChain<T>::iterator extendedChain<T>::iterator::operator++(int)
+typename extendedChain<T>::iterator extendedChain<T>::iterator::operator++(int)
 {
     iterator old = *this;
     node = node->next;
@@ -102,14 +104,14 @@ extendedChain<T>::iterator extendedChain<T>::iterator::operator++(int)
 }
 
 template <class T>
-extendedChain<T>::iterator extendedChain<T>::iterator::operator--()
+typename extendedChain<T>::iterator extendedChain<T>::iterator::operator--()
 {
     node = node->prev;
     return *this; // 返回这个迭代器而不是node
 }
 
 template <class T>
-extendedChain<T>::iterator extendedChain<T>::iterator::operator--(int)
+typename extendedChain<T>::iterator extendedChain<T>::iterator::operator--(int)
 {
     iterator old = *this;
     node = node->prev;
@@ -249,10 +251,10 @@ void extendedChain<T>::push_back(const T& data)
 }
 
 template <class T>
-extendedChain<T>::iterator extendedChain<T>::begin() { return iterator(head->next); }
+typename extendedChain<T>::iterator extendedChain<T>::begin() { return iterator(head->next); }
 
 template <class T>
-extendedChain<T>::iterator extendedChain<T>::end() { return iterator(head); }
+typename extendedChain<T>::iterator extendedChain<T>::end() { return iterator(head); }
 
 template <class T>
 void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
@@ -329,6 +331,7 @@ void extendedChain<T>::remove(int index)
     delete cur;
 }
 
+//删完了移到下一个
 template <class T>
 void extendedChain<T>::remove(iterator it)
 {
@@ -338,7 +341,9 @@ void extendedChain<T>::remove(iterator it)
     }
     it.node->prev->next = it.node->next;
     it.node->next->prev = it.node->prev;
+    iterator temp = it.node->next;
     delete it.node;
+    it = temp;
     listsize--;
 }
 
