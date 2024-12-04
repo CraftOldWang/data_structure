@@ -5,8 +5,6 @@
 
 using namespace std;
 
-// TODO还没完成
-
 template <class T>
 class rowElement {
 public:
@@ -229,6 +227,7 @@ public:
     // 并不是按矩阵来打印，只是打印有什么元素
     void print()
     {
+        cout<<"print matrix items"<<endl;
         typename extendedChain<headerElement<T>>::iterator it = mat.begin();
         while (it != mat.end()) {
             cout << it->row << " ";
@@ -243,8 +242,9 @@ public:
     }
 
     // 打印成矩阵的形状
-    void printasarray()
+    void printasmatrix()
     {
+        cout<<"print as matrix"<<endl;
         for (int i = 1; i <= rows; i++) {
             for (int j = 1; j <= cols; j++) {
                 cout << get(i, j) << " ";
@@ -284,6 +284,22 @@ istream& operator>>(istream& in, linkedMatrix<T>& x)
 
 void test()
 {
+
+    //TODO 从文件中读数据，这样不需要手动输入。copilot说有多种方法
+    //1. 使用输入重定向（Redirect Input）
+    //方法一：修改代码以读取文件
+    //最简单的方法是修改您的程序，使其可以从文件读取输入，而不是仅从 std::cin。这对于测试非常有效。
+    //
+    //使用输入重定向（Redirect Input）
+    //将预定义的输入数据存储在一个文件中，并让程序在运行时从该文件读取输入，而不是从命令行手动输入。
+    //方法二：使用 VS Code 终端运行带重定向的命令
+
+    //方法三：使用外部脚本
+    //您可以编写一个批处理脚本（Windows）或 shell 脚本（Linux/macOS）来运行程序并重定向输入。
+
+    //2. 修改代码以包含自动测试数据
+    //3. 使用单元测试
+    //5. 使用输入宏（Simulate Input）
     linkedMatrix<int> a;
     linkedMatrix<int> b;
     linkedMatrix<int> c;
@@ -294,40 +310,41 @@ void test()
     c = a * b;
     d = a + b;
     e = a - b;
-    a.printasarray();
-    b.printasarray();
-    d.printasarray();
-    e.printasarray();
-    c.printasarray();
+    a.printasmatrix();
+    b.printasmatrix();
+    d.printasmatrix();
+    e.printasmatrix();
+    c.printasmatrix();
 }
 
 void testinput()
 {
+    
     linkedMatrix<int> a;
     a.rows = 3;
     a.cols = 3;
-    a.mat.push_back(headerElement<int>(1));
-    // a.set(1,2,3);
-    // a.set(2,1,4);
+    // a.mat.push_back(headerElement<int>(1));
+    a.set(1,2,3);
+    a.set(2,1,4);
     cout<<a.get(1,2)<<endl;
     cout<<a.get(2,2)<<endl;
     a.print();
-    a.printasarray();
+    a.printasmatrix();
     
 }
 
 void test_extendedChain_input()
 {
-    // extendedChain<headerElement<int>> mat;
-    // headerElement<int> a(2);
-    // mat.push_back(a);
-    // mat.push_back(headerElement<int> (1));
-    // cout<<mat.begin()->row;
+    extendedChain<headerElement<int>> mat;
+    headerElement<int> a(2);
+    mat.push_back(a);
+    mat.push_back(headerElement<int> (1));
+    cout<<mat.begin()->row;
 }
 int main()
 {
-    // test();
-    testinput();
-    test_extendedChain_input();
+    test();
+    // testinput();
+    // test_extendedChain_input();
     return 0;
 }

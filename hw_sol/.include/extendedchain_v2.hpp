@@ -14,6 +14,17 @@ public:
         , prev(nullptr)
     {
     }
+
+    //这个似乎虽然有指针，但拷贝构造没有必要？因为指针指向的内存不是它管理的
+    //哦，在堆上开辟内存的才需要深拷贝管理，指针不一定需要。
+    //这里Node*不用深拷贝是因为，Node*只是一个指针，指向的内存是由外部管理的，不需要深拷贝（啊？？？  
+    //如果data是一个指针，那么就需要深拷贝
+    Node(const Node<T>& rhs)
+    {
+        data = rhs.data;
+        next = rhs.next;
+        prev = rhs.prev;
+    }
 };
 
 template <class T>
@@ -49,7 +60,8 @@ public:
 
     extendedChain();
     ~extendedChain();
-
+    extendedChain(const extendedChain<T>& rhs);
+    extendedChain<T>& operator=(const extendedChain<T>& rhs);
     
     void push_back(const T& data);
     void insert(const T& data, int index);
@@ -143,6 +155,46 @@ extendedChain<T>::~extendedChain()
         cur = temp;
     }
     delete head;
+}
+
+template <class T>
+extendedChain<T>::extendedChain(const extendedChain<T>& rhs)
+{
+    //如果我在这里使用push_back会怎样？会有问题吗？比如在push_back里需要调用拷贝构造，在拷贝构造里又调用push_back
+    head = new Node<T>();
+    head->next = head;
+    head->prev = head;
+    listsize = 0;
+
+    for(Node<T>*cur = rhs.head->next; cur != rhs.head; cur = cur->next)
+    {
+        push_back(cur->data);
+    }
+
+    
+}
+
+template <class T>
+extendedChain<T>& extendedChain<T>::operator=(const extendedChain<T>& rhs)
+{
+    if(this != &rhs)
+    {
+        //先删掉现有的防止内存泄漏
+        while(listsize>0)
+        {
+            remove(0);
+        }
+        //似乎并不需要删掉头节点。。。反正还得造一个
+        
+        listsize = 0;//正常来说应该是0，但还是重置一下吧。
+        for(Node<T>*cur = rhs.head->next; cur !=rhs.head; cur = cur->next)
+        {
+            push_back(cur->data);
+        }
+    }
+    
+    return *this;
+    
 }
 
 template <class T>

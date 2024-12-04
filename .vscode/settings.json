@@ -51,6 +51,7 @@
         "typeinfo": "cpp",
         "list": "cpp",
         "forward_list": "cpp",
-        "insertion_sort": "cpp"
+        "insertion_sort": "cpp",
+        "hash_map": "cpp"
     }
 }

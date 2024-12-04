@@ -1,4 +1,5 @@
 {
+    "version": "2.0.0",
     "configurations": [
         {
             "name": "C/C++: g++.exe build and debug active file",
@@ -25,7 +26,32 @@
                 }
             ],
             "preLaunchTask": "C/C++: g++.exe build active file"
+        },
+        //不太会用，先不折腾了。
+        {
+            "name": "Launch with Dr. Memory",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build and Run with Dr. Memory",
+            "logging": {
+                "engineLogging": true
+            }
         }
-    ],
-    "version": "2.0.0"
+    ]
+    
 }
