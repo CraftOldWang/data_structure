@@ -265,6 +265,7 @@ int main()
     fstream file("input.txt");
     while (file >> input) {
         if (input == "End") {
+            cout<<endl;
             break;
         }
 

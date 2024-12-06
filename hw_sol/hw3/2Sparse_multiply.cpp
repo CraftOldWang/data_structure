@@ -241,10 +241,13 @@ void test()
     c = a * b;
     // a.print_terms();
     // cout<<a.terms.size()<<endl;
+    cout<<"矩阵a:"<<endl;
     a.print_as_matrix();
+    cout<<"矩阵b:"<<endl;
     b.print_as_matrix();
     // b = b.transpose();
     // b.print_as_matrix();
+    cout<<"矩阵a*b:"<<endl;
     c.print_as_matrix();
 }
 
@@ -263,6 +266,7 @@ void test1()
     b.print_as_matrix();
     c.print_as_matrix();
 }
+
 int main()
 {
 

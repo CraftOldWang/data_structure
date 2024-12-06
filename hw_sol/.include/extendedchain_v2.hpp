@@ -166,10 +166,40 @@ extendedChain<T>::extendedChain(const extendedChain<T>& rhs)
     head->prev = head;
     listsize = 0;
 
-    for(Node<T>*cur = rhs.head->next; cur != rhs.head; cur = cur->next)
-    {
-        push_back(cur->data);
+    //GPT说是最好不要依赖push_back以防push_back中有调用复制构造，导致无限递归
+    // for(Node<T>*cur = rhs.head->next; cur != rhs.head; cur = cur->next)
+    // {
+    //     push_back(cur->data);
+    // }
+
+    //my_ver . 不使用push_back
+    // Node<T>*cur = rhs.head->next;
+    // while(cur != rhs.head)
+    // {
+    //     T*temp = new T(cur->data);
+    //     temp->next = head;
+    //     temp->prev = head->prev;
+    //     head->prev->next = temp;
+    //     head->prev = temp;
+    //     listsize++;
+    //     cur = cur->next;
+    // }
+
+    //GPT的方法，似乎更有效率?因为有些指针它只修改了一次，我是两次。
+    // 遍历 rhs 链表，逐个复制节点
+    Node<T>* cur = rhs.head->next;
+    Node<T>* last = head;
+    while (cur != rhs.head) {
+        Node<T>* newNode = new Node<T>(cur->data); // 深拷贝数据
+        newNode->prev = last;
+        last->next = newNode;
+        last = newNode;
+        ++listsize;
+        cur = cur->next;
     }
+    // 完成循环链表的闭合
+    last->next = head;
+    head->prev = last;
 
     
 }
@@ -288,17 +318,12 @@ template <class T>
 void extendedChain<T>::push_back(const T& data)
 {
     Node<T>* newnode = new Node<T>(data);
-    if (head->next == head) {
-        head->next = newnode;
-        head->prev = newnode;
-        newnode->next = head;
-        newnode->prev = head;
-    } else {
-        newnode->next = head;
-        newnode->prev = head->prev;
-        head->prev->next = newnode;
-        head->prev = newnode;
-    }
+
+    newnode->next = head;
+    newnode->prev = head->prev;
+    head->prev->next = newnode;
+    head->prev = newnode;
+    
     listsize++;
 }
 

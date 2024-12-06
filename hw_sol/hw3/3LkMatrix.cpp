@@ -1,6 +1,6 @@
 // TODO 想办法让编译器知道.include path。 在c_cpp_properties里设置了不知为何没用。
 #include "..\.include\extendedchain_v2.hpp"
-
+#include<fstream>
 #include <iostream>
 
 using namespace std;
@@ -285,7 +285,7 @@ istream& operator>>(istream& in, linkedMatrix<T>& x)
 void test()
 {
 
-    //TODO 从文件中读数据，这样不需要手动输入。copilot说有多种方法
+    //TODO 从文件中读数据，这样不需要手动输入。
     //1. 使用输入重定向（Redirect Input）
     //方法一：修改代码以读取文件
     //最简单的方法是修改您的程序，使其可以从文件读取输入，而不是仅从 std::cin。这对于测试非常有效。
@@ -305,11 +305,13 @@ void test()
     linkedMatrix<int> c;
     linkedMatrix<int> d;
     linkedMatrix<int> e;
-    cin >> a;
-    cin >> b;
+    fstream file("input3.txt");
+    file >> a;
+    file >> b;
     c = a * b;
     d = a + b;
     e = a - b;
+    cout<<endl;
     a.printasmatrix();
     b.printasmatrix();
     d.printasmatrix();
@@ -317,30 +319,29 @@ void test()
     c.printasmatrix();
 }
 
-void testinput()
-{
-    
-    linkedMatrix<int> a;
-    a.rows = 3;
-    a.cols = 3;
-    // a.mat.push_back(headerElement<int>(1));
-    a.set(1,2,3);
-    a.set(2,1,4);
-    cout<<a.get(1,2)<<endl;
-    cout<<a.get(2,2)<<endl;
-    a.print();
-    a.printasmatrix();
-    
-}
+// void testinput()
+// {
+//     linkedMatrix<int> a;
+//     a.rows = 3;
+//     a.cols = 3;
+//     // a.mat.push_back(headerElement<int>(1));
+//     a.set(1,2,3);
+//     a.set(2,1,4);
+//     cout<<a.get(1,2)<<endl;
+//     cout<<a.get(2,2)<<endl;
+//     a.print();
+//     a.printasmatrix();
+// }
 
-void test_extendedChain_input()
-{
-    extendedChain<headerElement<int>> mat;
-    headerElement<int> a(2);
-    mat.push_back(a);
-    mat.push_back(headerElement<int> (1));
-    cout<<mat.begin()->row;
-}
+// void test_extendedChain_input()
+// {
+//     extendedChain<headerElement<int>> mat;
+//     headerElement<int> a(2);
+//     mat.push_back(a);
+//     mat.push_back(headerElement<int> (1));
+//     cout<<mat.begin()->row;
+// }
+
 int main()
 {
     test();

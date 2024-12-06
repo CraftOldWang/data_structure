@@ -46,7 +46,7 @@ public:
         iterator operator--()
         {
             node = node->prev;
-            return *this; //返回这个迭代器而不是node 
+            return *this; // 返回这个迭代器而不是node
         }
 
         iterator operator--(int)
@@ -199,6 +199,7 @@ public:
         }
         listsize++;
     }
+
 protected:
 private:
     Node<T>* head;
@@ -206,7 +207,7 @@ private:
 };
 
 template <class T>
-void split(extendedChain<T>*& a, extendedChain<T>*& b, extendedChain<T>& c)//QUESTION 为什么这个c不加引用,最后打印链表c 的时候会打印未初始化的值.
+void split(extendedChain<T>*& a, extendedChain<T>*& b, extendedChain<T>& c) // QUESTION 为什么这个c不加引用,最后打印链表c 的时候会打印未初始化的值.
 {
     a = new extendedChain<T>();
     b = new extendedChain<T>();
@@ -216,30 +217,27 @@ void split(extendedChain<T>*& a, extendedChain<T>*& b, extendedChain<T>& c)//QUE
     while (cur != c.end()) {
         a->push_back(*cur);
         ++cur;
-        if(cur != c.end())
-        {
+        if (cur != c.end()) {
             b->push_back(*cur);
             ++cur;
         }
     }
 }
 
-
-template<class T>
+template <class T>
 void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
 {
     a = new extendedChain<T>();
     b = new extendedChain<T>();
-    //因为是成员函数, 所以可以获得head指针
+    // 因为是成员函数, 所以可以获得head指针
     Node<T>* cur = head->next;
     Node<T>* temp = cur;
 
-    while (cur != this->end()) {
+    while (cur != head) {
         temp = cur->next;
         a->Node_push_back(cur);
         cur = temp;
-        if(cur != this->end())
-        {
+        if (cur != head) {
             temp = cur->next;
             b->Node_push_back(cur);
             cur = temp;
@@ -247,15 +245,15 @@ void extendedChain<T>::split(extendedChain<T>*& a, extendedChain<T>*& b)
     }
     head->next = head;
     head->prev = head;
-
 }
 
-void test()
-{
-    // 测试链表类
-    extendedChain<int> a;
-    a.print_chain();
-}
+// void test()
+// {
+//     // 测试链表类
+//     extendedChain<int> a;
+//     a.print_chain();
+// }
+
 int main()
 {
     // test();
@@ -268,7 +266,10 @@ int main()
     cin.ignore(); // 后面不用cin了, 似乎没有这个必要?
     extendedChain<int>* a = nullptr;
     extendedChain<int>* b = nullptr;
-    split(a, b, c);
+
+    // split(a, b, c);
+    c.split(a, b);
+
     c.print_chain();
     a->print_chain();
     b->print_chain();

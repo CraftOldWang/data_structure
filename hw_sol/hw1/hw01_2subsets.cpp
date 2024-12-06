@@ -1,7 +1,8 @@
-// gpt生成的
+// gpt根据我写的python版本生成的在最下面
 // 我自己写的的大概是,树递归，每次新增1 or 0，于是乎顺序与要求的不一样
 
 // s?搞不懂这个递归的结构.
+
 
 // 本质是二叉树(左1右0)前序遍历, 然后遇到1就打印路径.也许可以用位运算右移....来整..
 #include <fstream>
@@ -72,7 +73,7 @@ void printSubsets(const bool* status, int reslen, int status_len)
 }
 
 
-//似乎想写另外一种, 但是没写完.
+//TODO 似乎想写另外一种, 但是没写完,最后没写。
 void printSubsets(const char* pre, int reslen, int status_len)
 {
     if (reslen == 0) {

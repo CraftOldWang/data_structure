@@ -182,15 +182,19 @@ int main()
     fstream file("input3.txt");
     bst* t = bst::construct_bst(file);
 
+    cout<<"叶节点数量:"<<endl;
     cout << t->count_leaves() << endl;
     cout<<endl;
 
+    cout<<"交换前:"<<endl;
     t->levelorder();
     t->swap_left_right();
     cout << endl;
+    cout<<"交换后:"<<endl;
     t->levelorder();
     
     cout<<endl;
+    cout<<"最大宽度:"<<endl;
     cout << t->max_width() << endl;
     
 
