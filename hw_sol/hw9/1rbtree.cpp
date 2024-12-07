@@ -284,15 +284,15 @@ public:
         return nullptr;
     }
 
-    void inorderHelper(RBTreeNode<T> *node) {
+    void inorderHelper(RBTreeNode<T>* node) const {
         if (node != NIL) {
             inorderHelper(node->left);
-            std::cout << node->data << " ";
+            std::cout << node->data << "(" << (node->color == RED ? "R" : "B") << ") ";
             inorderHelper(node->right);
         }
     }
 
-    void inorder() {
+    void inorder() const {
         inorderHelper(root);
         std::cout << std::endl;
     }

@@ -1,63 +1,40 @@
+#pragma once
 #include <ctime>
 #include <iostream>
 
 using namespace std;
 
 template <class T>
-class maxheap {
+class minheap {
 private:
-    //[0]存maxelem, [1:heapsize]存heap元素, [heapsize+1:2*heapsize+1]存minelem
     T* heap;
     int heapmaxlen;
     int heapsize;
 
 public:
-    maxheap(int heapmaxlen, const T& maxelem, const T& minelem);
-    ~maxheap();
+    minheap(int heapmaxlen, const T& minelem, const T& maxelem);
+    ~minheap();
     T top();
     void push(const T& data);
-    void swap(int i, int j);
     void pop();
     bool empty();
     void levelorder();
+    void initialize(T* theheap, int thesize, int minelem, int maxelem);
     void changelenth1D(int prevheapmaxlen, int nowheapmaxlen);
 };
 
-int main()
-{
-    srand(time(NULL));
-    maxheap<int> h(3, 100, -1);
-    for (int i = 1; i <= 8; i++) {
-        h.push(rand() % 100);
-        cout << endl;
-        h.levelorder();
-        cout << endl;
-    }
-
-    for (int i = 1; i <= 5; i++) {
-        cout << endl;
-        cout<<endl <<"top: "<< h.top();
-        h.pop();
-        cout<<endl;
-        h.levelorder();
-        cout << endl;
-    }
-
-    return 0;
-}
-
 template <class T>
-maxheap<T>::maxheap(int heapmaxlen, const T& maxelem, const T& minelem)
+minheap<T>::minheap(int heapmaxlen, const T& minelem, const T& maxelem)
 {
     this->heapmaxlen = heapmaxlen;
     heapsize = 0;
     heap = new T[2 * heapmaxlen + 2]; // 不使用heap[0];所以不给他初始化了是吗？？？？
-    heap[0] = maxelem;
-    heap[1] = minelem; // 为了方便操作，不用每次都判断是否越界; [n+1, 2*n +1]中放min, 创建时候n=0
+    heap[0] = minelem;
+    heap[1] = maxelem; // 为了方便操作，不用每次都判断是否越界; [n+1, 2*n +1]中放min, 创建时候n=0
 }
 
 template <class T>
-maxheap<T>::~maxheap()
+minheap<T>::~minheap()
 {
     delete heap;
     heapmaxlen = 0;
@@ -65,7 +42,7 @@ maxheap<T>::~maxheap()
 }
 
 template <class T>
-T maxheap<T>::top()
+T minheap<T>::top()
 {
     if (heapsize == 0)
         throw "queue empty";
@@ -74,7 +51,7 @@ T maxheap<T>::top()
 }
 
 template <class T>
-void maxheap<T>::push(const T& data)
+void minheap<T>::push(const T& data)
 {
     if (heapsize == heapmaxlen) {
         this->changelenth1D(heapmaxlen, 2 * heapmaxlen);
@@ -88,9 +65,9 @@ void maxheap<T>::push(const T& data)
     heapsize += 1;
     heap[2 * heapsize + 1] = heap[2 * heapsize] = heap[heapsize];
 
-    while (data > heap[parentindex]) // 不用>=是为了稳定？能不改就不改
+    while (data < heap[parentindex]) // 不用>=是为了稳定？能不改就不改
     {
-        heap[curindex] = heap[parentindex]; // 往下调；
+        heap[curindex] = heap[parentindex]; // 往上面调；
         curindex /= 2;
         parentindex /= 2;
     }
@@ -99,14 +76,8 @@ void maxheap<T>::push(const T& data)
 }
 
 template <class T>
-void maxheap<T>::pop()
+void minheap<T>::pop()
 {
-    // 0.看看能不能删
-    // 1.删除顶端
-    // 1.5 拿出数组中最末的元素，接下来为他寻找合适的位置(这个操作保证了不会弄乱大根堆结构)
-    // 2.与左边比较，如果大于等于，则元素放此处(大概率不可能);如果小于，则找左右的最大者，把它放上来，
-    // 3.注意力到拿上来而空出的那个节点，进行重复操作。
-    // 4.直到找到比下面俩大的位置;最后有minelem保证能找到
 
     if (empty())
         throw "pop empty";
@@ -118,12 +89,12 @@ void maxheap<T>::pop()
     heapsize--; // 不用删最后面的minelem,多了没关系,少了就不行了(故push里要更新)
 
     // 找位置
-    while (childnode <= heapsize) {
-        if (heap[childnode] < heap[childnode + 1]) // 找左右最大者
+    while (childnode >= heapsize) {
+        if (heap[childnode] > heap[childnode + 1]) // 找左右最小者
             childnode++;
-        if (lastelem >= heap[childnode])
+        if (lastelem <= heap[childnode])
             break;
-        heap[curnode] = heap[childnode];
+        heap[curnode] = heap[childnode]; // 往上面调
         curnode = childnode;
         childnode *= 2;
     }
@@ -132,10 +103,10 @@ void maxheap<T>::pop()
 }
 
 template <class T>
-void maxheap<T>::changelenth1D(int prevheapmaxlen, int nowheapmaxlen)
+void minheap<T>::changelenth1D(int prevheapmaxlen, int nowheapmaxlen)
 {
     T* temp = new T[2 * nowheapmaxlen + 2];
-    // maxelem 以及  heap中的元素的复制
+    // minelem 以及  heap中的元素的复制
     for (int i = 0; i <= heapsize; i++) {
         temp[i] = heap[i];
     }
@@ -148,13 +119,13 @@ void maxheap<T>::changelenth1D(int prevheapmaxlen, int nowheapmaxlen)
 }
 
 template <class T>
-bool maxheap<T>::empty()
+bool minheap<T>::empty()
 {
     return heapsize == 0;
 }
 
 template <class T>
-void maxheap<T>::levelorder()
+void minheap<T>::levelorder()
 {
     int level = 2;
     for (int i = 1; i <= heapsize; i++) {
@@ -164,5 +135,39 @@ void maxheap<T>::levelorder()
             level = level * 2;
         }
         cout << heap[i] << " ";
+    }
+    cout << endl;
+}
+
+
+template <class T>
+void minheap<T>::initialize(T* theheap, int thesize, int minelem, int maxelem)
+{
+    delete[] heap; // 需要把前面的资源释放掉
+    heapsize = thesize;
+    heapmaxlen = thesize;
+
+    heap = new T[2 * heapmaxlen + 2];
+    heap[0] = minelem;
+    for (int i = 1; i <= heapsize; i++) {
+        heap[i] = theheap[i-1];// 利用到theheap[0];
+    }
+    for (int i = heapsize + 1; i < 2 * heapmaxlen + 2; i++) {
+        heap[i] = maxelem;
+    }
+
+    for (int root = heapsize / 2; root >= 1; root--) {
+        T rootelem = heap[root];
+
+        int child = 2 * root;
+        while (1) {  //因为不可能child到比heapsize还大的地方，所以不用child<=heapsize
+            if (heap[child] > heap[child + 1]) // 底下有maxelem保护
+                child++;
+            if (rootelem <= heap[child])
+                break;
+            heap[child / 2] = heap[child];
+            child *= 2;
+        }
+        heap[child / 2] = rootelem;
     }
 }
