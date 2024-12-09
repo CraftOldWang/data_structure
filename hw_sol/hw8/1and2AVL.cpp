@@ -55,11 +55,11 @@ private:
     }
 
     avlnode* insert_helper(avlnode*& node, int value, avlnode*& Anode, bool& bfincrease);
-    avlnode* rotate(avlnode*&node, int value, )
-    avlnode* left_rotate(avlnode*& node, avlnode*& child);
-    avlnode* right_rotate(avlnode*& node, avlnode*& child);
-    avlnode* right_then_left_rotate(avlnode*& node, avlnode*& child);
-    avlnode* left_then_right_rotate(avlnode*& node, avlnode*& child);
+    void rotate(avlnode*& Anode, int value,bool& bfincrease);
+    void left_rotate(avlnode*& node, avlnode*& child);
+    void right_rotate(avlnode*& node, avlnode*& child);
+    void right_then_left_rotate(avlnode*& node, avlnode*& child);
+    void left_then_right_rotate(avlnode*& node, avlnode*& child);
 
     avlnode* remove_helper(avlnode*& node, int value, avlnode*& Anode, bool& bf); // 不确定该怎么写.
 };
@@ -107,10 +107,9 @@ avlnode* avltree::insert_helper(avlnode*& node, int value, avlnode*& Anode, bool
     {
         // 应该怎么更新bf啊? 似乎不旋转就是这样一路更新到顶上??
 
-        if (value < node->value && bfincrease) { // 插入到左边
+        if (value < node->value && bfincrease) { // value插入到左边
             node->bf += 1;
-
-        } else if (value > node->value && bfincrease) {
+        } else if (value > node->value && bfincrease) { // value插入到右边
             node->bf -= 1;
         }
         bfincrease = node->bf == 0 ? false : true; // 等价于if (node->bf = 0) bfincrease = false;
@@ -121,53 +120,57 @@ avlnode* avltree::insert_helper(avlnode*& node, int value, avlnode*& Anode, bool
     // 左偏且插入左边
     // 当递归回Anode的时候再旋转, 因为node是父节点的left或者right的引用, 于是乎直接可影响父节点,不需要拿个东西存父节点的东西
     // 但Anode是我随便创建的一个变量的引用....这个没什么用.
-    else if (node == Anode) {
-        
-        if (Anode->bf == 1 && value < Anode->value) { // 也许应该放在更新平衡因子的前面?(Anode == nullptr的情况) ,不过那样似乎得检查Anode是否为nullptr, 不然没有成员bf
-            // bf == 1 的话, 插入前左子树是存在的
-            avlnode* child = Anode->left;
-            if (value < child->value) // 插入到Anode的左子树的左子树中.LL
-            {
-                right_rotate(Anode, child);
-                // 旋转后有些不在递归路径上的节点的bf似乎也要更新, 或者我们可以在rotate里完成
-            } else if (value > child->value) { // 插入到左子树的右子树中, LR
-                avlnode* grandchild = child->right;
-                child = left_rotate(child, grandchild); // rotate应该返回原来以Anode为根的那棵树在旋转后的根节点,
-                right_rotate(Anode, child);
-                // 旋转后有些不在递归路径上的节点的bf似乎也要更新, 或者我们可以在rotate里完成
-                // 似乎并不, 好像还是递归路径上的, 只不过到Anode更新完就不往上更新了?
-                // 好像A, B, C中有不在递归路径,但需要更新的.
-            }
-        } else if (Anode->bf == -1 && value > Anode->value) { // 好吧, 只可能等于-1或者1,
-            avlnode* child = Anode->right;
-            if (value > child->value) { // RR 右子树的右子树
-                left_rotate(Anode, child);
-            } else if (value > Anode->value && value < child->value) { // RL 右子树的左子树
-                avlnode* grandchild = child->left;
-                child = right_rotate(child, grandchild);
-                left_rotate(Anode, child);
-            }
-        }
-        bfincrease =false;//往上就不需要修改bf了
+    if (node == Anode) { //node不会是nullptr(函数的最开始就返回了) ,因此运行这个if时,Anode不是nullptr
+        //我这个rotate, 进去了也不一定做旋转....解耦合做的不好.
+        rotate(Anode, value ,bfincrease);
     }
 }
+
+//旋转相当于在利用剩余空间(Anode 的bf为1或-1, 说明有闲置空间),
+void avltree::rotate(avlnode*& Anode, int value , bool& bfincrease)
+{
+    // Anode不会是nullptr, 故有成员bf
+    if (Anode->bf == 1 && value < Anode->value) { 
+        // bf == 1 的话, 插入前左子树是存在的
+        avlnode* child = Anode->left;
+        if (value < child->value) // 插入到Anode的左子树的左子树中.LL
+        {
+            right_rotate(Anode, child);
+        } else if (value > child->value) { // 插入到左子树的右子树中, LR
+            left_then_right_rotate(Anode, child);
+        }
+        bfincrease = false; // 如果旋转过了,从Anode往上就不需要修改bf了,因为Anode旋转后与插入前高度相同.
+    } else if (Anode->bf == -1 && value > Anode->value) { // 好吧, 只可能等于-1或者1,
+        avlnode* child = Anode->right;
+        if (value > child->value) { // RR 右子树的右子树
+            left_rotate(Anode, child);
+        } else if (value > Anode->value && value < child->value) { // RL 右子树的左子树
+            right_then_left_rotate(Anode, child);
+        }
+        bfincrease = false;     
+    }
+    //其他情况不用旋转
+}
+
+
+//其实都不用传child 的,只需要进行旋转的部分的根(bf绝对值将变成2的)
 
 // 顺便更新不在递归路径上的节点的bf....说实话感觉耦合度有点高
 // 用的bf是递归更新前的...
 // 处理RR
-avlnode* avltree::left_rotate(avlnode*& node, avlnode*& child)
+void avltree::left_rotate(avlnode*& node, avlnode*& child)
 {
 
     node->right = child->left;
     child->left = node;
     node->bf = 0;
     node = child;
-    return child;
+
 }
 
 // 处理RL
 // 但似乎...child之上的bf不用更新了???
-avlnode* avltree::right_then_left_rotate(avlnode*& node, avlnode*& child)
+void avltree::right_then_left_rotate(avlnode*& node, avlnode*& child)
 {
 
     avlnode* grandchild = child->left;
@@ -184,12 +187,12 @@ avlnode* avltree::right_then_left_rotate(avlnode*& node, avlnode*& child)
 
     node = grandchild;
 
-    return grandchild;
+
 }
 
 // 向右旋转
 // 处理LL
-avlnode* avltree::right_rotate(avlnode*& node, avlnode*& child)
+void avltree::right_rotate(avlnode*& node, avlnode*& child)
 {
     // 不对卧槽,父节点找不到了..... 改了一下函数,现在node是父节点的left或者right成员的引用.
     // child 似乎没必要用引用? 但先用着吧.
@@ -199,12 +202,11 @@ avlnode* avltree::right_rotate(avlnode*& node, avlnode*& child)
     // 感觉旋转就是把导致不平衡的插入, 转换成另一个等价的插入(但不一定是插入当前插入的value), 这个插入是不会导致有bf绝对值为2 的
     // 然后我就是要在旋转之后, 把bf调整到这个等价插入结束之后的情况, 然后让递归解决其他bf的改变.
     node = child; // 像是这样, 希望 对指针变量的赋值 能影响到实参...引用能做到.
-    return child;
 }
 
 // 处理LR
 // 但似乎...child之上的bf不用更新了???
-avlnode* avltree::left_then_right_rotate(avlnode*& node, avlnode*& child)
+void avltree::left_then_right_rotate(avlnode*& node, avlnode*& child)
 {
 
     avlnode* grandchild = child->right;
@@ -221,8 +223,14 @@ avlnode* avltree::left_then_right_rotate(avlnode*& node, avlnode*& child)
 
     node = grandchild;
 
-    return grandchild;
 }
+
+
+
+
+
+//下面这个gpt的, 维护一个height的变量, 确实方便进行insert , remove之后的更新
+
 
 struct AVLNode {
     int data;
