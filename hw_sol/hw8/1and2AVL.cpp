@@ -24,10 +24,10 @@ class avltree {
 public:
     void insert(int val)
     {
-        if(find(val))//找到了, 直接返回, 不插入
+        if (find(val)) // 找到了, 直接返回, 不插入
             return;
         avlnode* Anode = nullptr;
-        int bfinc = 0;
+        bool bfinc = 0;
         insert_helper(root, val, Anode, bfinc);
     }
     void remove(int val);
@@ -54,7 +54,14 @@ private:
         }
     }
 
-    avlnode* insert_helper(avlnode*& node, int value, avlnode*& Anode, int& bfincrease);
+    avlnode* insert_helper(avlnode*& node, int value, avlnode*& Anode, bool& bfincrease);
+    avlnode* rotate(avlnode*&node, int value, )
+    avlnode* left_rotate(avlnode*& node, avlnode*& child);
+    avlnode* right_rotate(avlnode*& node, avlnode*& child);
+    avlnode* right_then_left_rotate(avlnode*& node, avlnode*& child);
+    avlnode* left_then_right_rotate(avlnode*& node, avlnode*& child);
+
+    avlnode* remove_helper(avlnode*& node, int value, avlnode*& Anode, bool& bf); // 不确定该怎么写.
 };
 
 avlnode* avltree::find_helper(avlnode* node, int value)
@@ -70,33 +77,152 @@ avlnode* avltree::find_helper(avlnode* node, int value)
     }
 }
 
-// 遇到相同的就直接返回了, 因为我的data是普通的int
-avlnode* avltree::insert_helper(avlnode*& node, int value, avlnode*& Anode, int& bfincrease)
+// 不会遇到相同的,因为在插入前先find 查了一下.
+avlnode* avltree::insert_helper(avlnode*& node, int value, avlnode*& Anode, bool& bfincrease)
 {
     if (node == nullptr) { // 整个树的根为nullptr 或者到达叶节点的左or右
         node = new avlnode(value);
+        bfincrease = true;
         return node;
     }
-    // 发现有重复, 直接返回它自己... 但是这个会不会出事?毕竟程序里可能认为是插入了一个新节点.
-    // 改成insert_helper 之前先查重
-    // else if (value == node->value ){ 
-    //     return node;
-    // }
 
     // 插入到node的左子树, 并且检查是否更新Anode
     // 引用传递的话, 递归栈里的各个Anode 其实只有一个变量, 所以都是最新的.
+    if (node->bf == 1 || node->bf == -1) // 更新Anode
+        Anode = node;
     if (value < node->value) {
-        if (node->bf == 1)
-            Anode = node;
-        insert_helper(node, value, Anode, bfincrease);
-    }else
+        insert_helper(node->left, value, Anode, bfincrease);
+    } else { // value > node->value
+        insert_helper(node->right, value, Anode, bfincrease);
+    }
+
+    // 最后终于是插入了, 我们现在有插入节点和Anode 可以使用.
+    // 通过比较value与Anode 的左右的大小, 来判断是否需要插入....
+    // 我们要到递归栈回退到Anode == node 的时候再来操作吗?不然似乎每次都会操作一下.
+    //  或者由于需要沿着递归栈更新bf ,所以应该在归的一开始就弄完(插入前的叶节点处, 因为我前面新建了就直接return了)
+    // 旋转完就置Anode 为0 , Anode == nullptr 里面就写更新bf的东西....
+    //  可以通过node->value 与value 比较来判断是插入到左边还是右边了.
+    // 沿着插入点一路更新上去.
+    if (Anode == nullptr || bfincrease == true) // 这个是不需要旋转的情况, 要旋转的也需要先旋转, 转化为不需要旋转的?
+    {
+        // 应该怎么更新bf啊? 似乎不旋转就是这样一路更新到顶上??
+
+        if (value < node->value && bfincrease) { // 插入到左边
+            node->bf += 1;
+
+        } else if (value > node->value && bfincrease) {
+            node->bf -= 1;
+        }
+        bfincrease = node->bf == 0 ? false : true; // 等价于if (node->bf = 0) bfincrease = false;
+    }
+
+    // 似乎如果需要旋转的话, 那么A处往上的平衡因子不用修改了(因为以A为根的树经过四种旋转之一后,高度与原来一样 )
+
+    // 左偏且插入左边
+    // 当递归回Anode的时候再旋转, 因为node是父节点的left或者right的引用, 于是乎直接可影响父节点,不需要拿个东西存父节点的东西
+    // 但Anode是我随便创建的一个变量的引用....这个没什么用.
+    else if (node == Anode) {
+        
+        if (Anode->bf == 1 && value < Anode->value) { // 也许应该放在更新平衡因子的前面?(Anode == nullptr的情况) ,不过那样似乎得检查Anode是否为nullptr, 不然没有成员bf
+            // bf == 1 的话, 插入前左子树是存在的
+            avlnode* child = Anode->left;
+            if (value < child->value) // 插入到Anode的左子树的左子树中.LL
+            {
+                right_rotate(Anode, child);
+                // 旋转后有些不在递归路径上的节点的bf似乎也要更新, 或者我们可以在rotate里完成
+            } else if (value > child->value) { // 插入到左子树的右子树中, LR
+                avlnode* grandchild = child->right;
+                child = left_rotate(child, grandchild); // rotate应该返回原来以Anode为根的那棵树在旋转后的根节点,
+                right_rotate(Anode, child);
+                // 旋转后有些不在递归路径上的节点的bf似乎也要更新, 或者我们可以在rotate里完成
+                // 似乎并不, 好像还是递归路径上的, 只不过到Anode更新完就不往上更新了?
+                // 好像A, B, C中有不在递归路径,但需要更新的.
+            }
+        } else if (Anode->bf == -1 && value > Anode->value) { // 好吧, 只可能等于-1或者1,
+            avlnode* child = Anode->right;
+            if (value > child->value) { // RR 右子树的右子树
+                left_rotate(Anode, child);
+            } else if (value > Anode->value && value < child->value) { // RL 右子树的左子树
+                avlnode* grandchild = child->left;
+                child = right_rotate(child, grandchild);
+                left_rotate(Anode, child);
+            }
+        }
+        bfincrease =false;//往上就不需要修改bf了
+    }
 }
 
+// 顺便更新不在递归路径上的节点的bf....说实话感觉耦合度有点高
+// 用的bf是递归更新前的...
+// 处理RR
+avlnode* avltree::left_rotate(avlnode*& node, avlnode*& child)
+{
 
+    node->right = child->left;
+    child->left = node;
+    node->bf = 0;
+    node = child;
+    return child;
+}
 
+// 处理RL
+// 但似乎...child之上的bf不用更新了???
+avlnode* avltree::right_then_left_rotate(avlnode*& node, avlnode*& child)
+{
 
+    avlnode* grandchild = child->left;
 
+    node->right = grandchild->left;
+    child->left = grandchild->right;
 
+    grandchild->right = child;
+    grandchild->left = node;
+
+    child->bf = (grandchild->bf == 1) ? -1 : 0;
+    node->bf = (grandchild->bf == -1) ? 1 : 0;
+    grandchild->bf = 0;
+
+    node = grandchild;
+
+    return grandchild;
+}
+
+// 向右旋转
+// 处理LL
+avlnode* avltree::right_rotate(avlnode*& node, avlnode*& child)
+{
+    // 不对卧槽,父节点找不到了..... 改了一下函数,现在node是父节点的left或者right成员的引用.
+    // child 似乎没必要用引用? 但先用着吧.
+    node->left = child->right; // child->right是nullptr的话也没什么关系, 与有东西的情况兼容.
+    child->right = node;
+    node->bf = 0; // 画图, LL变化后是这样.
+    // 感觉旋转就是把导致不平衡的插入, 转换成另一个等价的插入(但不一定是插入当前插入的value), 这个插入是不会导致有bf绝对值为2 的
+    // 然后我就是要在旋转之后, 把bf调整到这个等价插入结束之后的情况, 然后让递归解决其他bf的改变.
+    node = child; // 像是这样, 希望 对指针变量的赋值 能影响到实参...引用能做到.
+    return child;
+}
+
+// 处理LR
+// 但似乎...child之上的bf不用更新了???
+avlnode* avltree::left_then_right_rotate(avlnode*& node, avlnode*& child)
+{
+
+    avlnode* grandchild = child->right;
+
+    node->left = grandchild->right;
+    child->right = grandchild->left;
+
+    grandchild->left = child;
+    grandchild->right = node;
+
+    child->bf = grandchild->bf == -1 ? 1 : 0;
+    node->bf = grandchild->bf == 1 ? -1 : 0;
+    grandchild->bf = 0;
+
+    node = grandchild;
+
+    return grandchild;
+}
 
 struct AVLNode {
     int data;
