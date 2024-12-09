@@ -1,69 +1,153 @@
 // 1.	编写函数，计算AVL树的高度，要求说明该函数是所有算法中最优的。
-//2.	编写函数，返回AVL树中距离根节点最近的叶节点的值。
+// 2.	编写函数，返回AVL树中距离根节点最近的叶节点的值。
 
 #include <iostream>
 using namespace std;
 
-struct avlnode{
-    int data;
+struct avlnode {
+    int value;
     avlnode* left;
     avlnode* right;
     int bf;
 
-    avlnode(int val):data(val), left(nullptr), right(nullptr), bf(0){}
+    avlnode(int val)
+        : value(val)
+        , left(nullptr)
+        , right(nullptr)
+        , bf(0)
+    {
+    }
 };
 
-class avltree{
+class avltree {
 
 public:
-    void insert(int val);
+    void insert(int val)
+    {
+        if(find(val))//找到了, 直接返回, 不插入
+            return;
+        avlnode* Anode = nullptr;
+        int bfinc = 0;
+        insert_helper(root, val, Anode, bfinc);
+    }
     void remove(int val);
-    avlnode* find(int val);
+    avlnode* find(int val)
+    {
+        return find_helper(root, val);
+    }
     int get_height();
     avlnode* get_nearset_leaf();
+
 private:
     avlnode* root;
 
-    
+    avlnode* find_helper(avlnode* node, int value)
+    {
+        if (node == nullptr || node->value == value) {
+            return node;
+        }
+
+        if (value < node->value) {
+            return find_helper(node->left, value);
+        } else {
+            return find_helper(node->right, value);
+        }
+    }
+
+    avlnode* insert_helper(avlnode*& node, int value, avlnode*& Anode, int& bfincrease);
 };
+
+avlnode* avltree::find_helper(avlnode* node, int value)
+{
+    if (node == nullptr || node->value == value) {
+        return node;
+    }
+
+    if (value < node->value) {
+        return find_helper(node->left, value);
+    } else {
+        return find_helper(node->right, value);
+    }
+}
+
+// 遇到相同的就直接返回了, 因为我的data是普通的int
+avlnode* avltree::insert_helper(avlnode*& node, int value, avlnode*& Anode, int& bfincrease)
+{
+    if (node == nullptr) { // 整个树的根为nullptr 或者到达叶节点的左or右
+        node = new avlnode(value);
+        return node;
+    }
+    // 发现有重复, 直接返回它自己... 但是这个会不会出事?毕竟程序里可能认为是插入了一个新节点.
+    // 改成insert_helper 之前先查重
+    // else if (value == node->value ){ 
+    //     return node;
+    // }
+
+    // 插入到node的左子树, 并且检查是否更新Anode
+    // 引用传递的话, 递归栈里的各个Anode 其实只有一个变量, 所以都是最新的.
+    if (value < node->value) {
+        if (node->bf == 1)
+            Anode = node;
+        insert_helper(node, value, Anode, bfincrease);
+    }else
+}
+
+
+
+
+
 
 
 struct AVLNode {
-    int data;        
-    AVLNode* left;   
-    AVLNode* right;  
-    int height;      
+    int data;
+    AVLNode* left;
+    AVLNode* right;
+    int height;
 
-    AVLNode(int val) : data(val), left(nullptr), right(nullptr), height(1) {}
+    AVLNode(int val)
+        : data(val)
+        , left(nullptr)
+        , right(nullptr)
+        , height(1)
+    {
+    }
 };
 
 class AVLTree {
 public:
-    AVLTree() : root(nullptr) {}
+    AVLTree()
+        : root(nullptr)
+    {
+    }
 
     // 插入节点
-    void insert(int data) {
+    void insert(int data)
+    {
         root = insert(root, data);
     }
 
     // 删除节点
-    void remove(int data) {
+    void remove(int data)
+    {
         root = remove(root, data);
     }
 
     // 获取 AVL 树的高度
-    int getHeight() {
+    int getHeight()
+    {
         return getHeight(root);
     }
 
     // 中序遍历
-    void inorder() {
+    void inorder()
+    {
         inorder(root);
         cout << endl;
     }
 
     // 打印 AVL 树结构
-    void printTree() {
+    void printTree()
+    {
         printTree(root, "", true);
     }
 
@@ -71,22 +155,26 @@ private:
     AVLNode* root;
 
     // 获取节点高度
-    int getHeight(AVLNode* node) {
+    int getHeight(AVLNode* node)
+    {
         return node ? node->height : 0;
     }
 
     // 更新节点高度
-    void updateHeight(AVLNode* node) {
+    void updateHeight(AVLNode* node)
+    {
         node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
     }
 
     // 计算平衡因子
-    int getBalanceFactor(AVLNode* node) {
+    int getBalanceFactor(AVLNode* node)
+    {
         return getHeight(node->left) - getHeight(node->right);
     }
 
     // 左旋操作
-    AVLNode* rotateLeft(AVLNode* y) {
+    AVLNode* rotateLeft(AVLNode* y)
+    {
         AVLNode* x = y->right;
         AVLNode* T2 = x->left;
 
@@ -102,7 +190,8 @@ private:
     }
 
     // 右旋操作
-    AVLNode* rotateRight(AVLNode* y) {
+    AVLNode* rotateRight(AVLNode* y)
+    {
         AVLNode* x = y->left;
         AVLNode* T2 = x->right;
 
@@ -118,7 +207,8 @@ private:
     }
 
     // 插入节点的辅助函数
-    AVLNode* insert(AVLNode* node, int data) {
+    AVLNode* insert(AVLNode* node, int data)
+    {
         if (!node)
             return new AVLNode(data);
 
@@ -137,7 +227,8 @@ private:
     }
 
     // 删除节点的辅助函数
-    AVLNode* remove(AVLNode* node, int data) {
+    AVLNode* remove(AVLNode* node, int data)
+    {
         if (!node)
             return nullptr;
 
@@ -167,7 +258,8 @@ private:
     }
 
     // 平衡 AVL 树的辅助函数
-    AVLNode* balance(AVLNode* node) {
+    AVLNode* balance(AVLNode* node)
+    {
         int bf = getBalanceFactor(node);
 
         // 左子树高，需要右旋
@@ -187,7 +279,8 @@ private:
     }
 
     // 获取最小值节点
-    AVLNode* getMinValueNode(AVLNode* node) {
+    AVLNode* getMinValueNode(AVLNode* node)
+    {
         AVLNode* current = node;
         while (current->left)
             current = current->left;
@@ -195,7 +288,8 @@ private:
     }
 
     // 中序遍历的辅助函数
-    void inorder(AVLNode* node) {
+    void inorder(AVLNode* node)
+    {
         if (node) {
             inorder(node->left);
             cout << node->data << " ";
@@ -204,7 +298,8 @@ private:
     }
 
     // 打印 AVL 树结构的辅助函数
-    void printTree(AVLNode* node, string indent, bool isLeft) {
+    void printTree(AVLNode* node, string indent, bool isLeft)
+    {
         if (node) {
             cout << indent;
             if (isLeft) {
