@@ -1,7 +1,7 @@
-// TODO 自己写一个二叉搜索树
 #include <ctime>
 #include <iostream>
 
+//试着写了一下普通的二叉搜索树
 using namespace std;
 
 struct treenode {

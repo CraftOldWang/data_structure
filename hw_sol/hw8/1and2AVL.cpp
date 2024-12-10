@@ -519,7 +519,7 @@ avlnode* avltree::get_nearset_leaf()
 {
     deque<avlnode*> dq;
     dq.push_back(root);
-    while (!dq.empty()) {
+    while (1) {
         avlnode* node = dq.front();
         dq.pop_front();
         if (node->left == nullptr && node->right == nullptr) {
@@ -533,6 +533,7 @@ avlnode* avltree::get_nearset_leaf()
             }
         }
     }
+    
 }
 
 
@@ -541,16 +542,16 @@ int main()
     // srand(time(42));
     srand(time(NULL));
     avltree t;
-    // int a = 0;
-    // for (int i = 0; i < 20; i++) {
-    //     a = rand() % 100;
-    //     cout << a << " ";
-    //     t.insert(a);
-    // }
-    int a[20] = { 94, 42, 62, 39, 72, 84, 84, 97, 12, 40, 13, 92, 97, 77, 74, 80, 31, 92, 63, 96 };
+    int a = 0;
     for (int i = 0; i < 20; i++) {
-        t.insert(a[i]);
+        a = rand() % 100;
+        cout << a << " ";
+        t.insert(a);
     }
+    // int a[20] = { 94, 42, 62, 39, 72, 84, 84, 97, 12, 40, 13, 92, 97, 77, 74, 80, 31, 92, 63, 96 };
+    // for (int i = 0; i < 20; i++) {
+    //     t.insert(a[i]);
+    // }
 
     cout << endl;
 

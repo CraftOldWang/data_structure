@@ -53,5 +53,6 @@
         "forward_list": "cpp",
         "insertion_sort": "cpp",
         "hash_map": "cpp"
-    }
+    },
+    "todo-tree.tree.scanMode": "current file"
 }
