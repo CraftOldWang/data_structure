@@ -52,7 +52,14 @@
         "list": "cpp",
         "forward_list": "cpp",
         "insertion_sort": "cpp",
-        "hash_map": "cpp"
+        "hash_map": "cpp",
+        "map": "cpp",
+        "chrono": "cpp",
+        "charconv": "cpp",
+        "ratio": "cpp",
+        "format": "cpp",
+        "span": "cpp",
+        "variant": "cpp"
     },
     "todo-tree.tree.scanMode": "current file"
 }

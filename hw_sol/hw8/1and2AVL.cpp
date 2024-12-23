@@ -533,14 +533,12 @@ avlnode* avltree::get_nearset_leaf()
             }
         }
     }
-    
 }
-
 
 int main()
 {
-    // srand(time(42));
-    srand(time(NULL));
+    srand(42);
+    // srand(time(NULL));
     avltree t;
     int a = 0;
     for (int i = 0; i < 20; i++) {
