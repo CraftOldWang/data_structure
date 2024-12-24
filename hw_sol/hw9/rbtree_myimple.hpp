@@ -309,6 +309,7 @@ private:
             Node* replace_node = find_successor(node);
             node->value = replace_node->value; // BUG 先替换再删除，先存着值，删完再替换。这个顺序可能会有影响吗？比如如果我再fixup里面用了节点的值来比较的话，
             delete_node = replace_node;
+            cout<<"需要替换的情况"<<endl;
             ////递归调用。。。毕竟替换之后，就属于上面的两种情形了，不会再次递归调用。
             // 并不用递归调用，这里往下没有使用node变量了，只有在用delete_node, 于是把
             // delete_node设为要删除的即可.
