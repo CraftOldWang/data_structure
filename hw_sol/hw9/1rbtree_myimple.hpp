@@ -13,7 +13,7 @@ bool REMOVE_NOT_FOUND_REPORT = false;
 // BUG 检查一下删除之后 是否更新了 被删除节点的parent的 left right 成员变量
 
 // insert 经过几次20个左右数字的测试，并且做了分支覆盖(但是分支后不一定能立即体现出问题，如果没在有问题的节点下面插入，其实是体现不出来的。。。所以效果要打个问号)
-
+// 现在经过10000+数字测试是没问题的了。
 using namespace std;
 
 typedef enum {
