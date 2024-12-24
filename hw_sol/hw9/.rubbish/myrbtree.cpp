@@ -82,6 +82,7 @@ private:
 
 
     void ascend_helper(rbnode* node);
+    void inorder();
 };
 
 bool rbtree::find_helper(rbnode* node, const int& value)
