@@ -2,7 +2,7 @@
 #include <map>
 #include <queue>
 #include <vector>
-
+// 没有用呢，map迭代器的顺序是中序遍历。。。找不出红黑树模样的东西
 using namespace std;
 
 // 层序遍历打印红黑树，并在每层后打印回车

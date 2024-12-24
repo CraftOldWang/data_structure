@@ -1,10 +1,14 @@
+#pragma once 
+#include <cassert>
 #include <ctime>
 #include <deque>
 #include <iostream>
 #include <vector>
+
 // TODO ask助教 这么多情况，我怎么debug啊？？我只能想到用已有的map来搞
 //  另外还要特别多的调试语句？？？ 难道说应该一次就写对？？怎么做到 ？
 //  提前讨论清楚分类？？ 但是代码实现又比纸上讨论的更琐碎，有很多细节要额外考虑。
+// BUG 检查一下删除之后 是否更新了 被删除节点的parent的 left right 成员变量
 
 // insert 经过几次20个左右数字的测试，并且做了分支覆盖(但是分支后不一定能立即体现出问题，如果没在有问题的节点下面插入，其实是体现不出来的。。。所以效果要打个问号)
 
@@ -260,7 +264,7 @@ private:
     // 必然存在 node->value == data
     void remove_helper(Node* node, int data)
     {
-        //必然能找到，所以不需要检验是否到Nil吧
+        // 必然能找到，所以不需要检验是否到Nil吧
         if (data < node->value) {
             // if (node->left != Nil) {
             remove_helper(node->left, data);
@@ -273,79 +277,206 @@ private:
             // }
         }
 
-        // node->value == data 
+        // node->value == data
+        // step 1 : 寻找要删的节点,并设置为delete_node
         Node* delete_node; // 这个deletenode 是还没被delete 关键字删除的
-        if (node->left == Nil && node->right == Nil) {//要删除节点是底层。
+        if (node->left == Nil && node->right == Nil) { // 要删除节点是底层的叶子
             delete_node = node;
         } else if (node->left == Nil || node->right == Nil) { // 这种也是node为底层的有一个红节点的黑节点的情况吧
-            if (node->left != Nil) { // 用左边节点代替自己与父节点连接
-                if (node->parent->left == node) { // 父节点的左边是自己
-                    node->parent->left = node->left;
-                    node->left->parent = node->parent;
-                } else if(node->parent->right == node){ // 父节点的右边是自己 防御性编程（怕自己哪里写错，直接else的话会更难排查)
-                    node->parent->right = node->left;
-                    node->left->parent = node->parent;
-                } else{
-                    cout<<"WRONG.remove helper .node should be its parent's child "<<endl;
-                }
-
-            } else { // 用右边节点代替自己与父节点连接
-                if (node->parent->left == node) { // 父节点的左边是自己
-                    node->parent->left = node->right;
-                    node->right->parent = node->parent;
-                } else { // 父节点的右边是自己
-                    node->parent->right = node->right;
-                    node->right->parent = node->parent;
-                }
-            }
+            // 逻辑写重复了，下面找到delete_node 之后又进行了一次这个操作。。。
+            // 这个step就是找到delete_node ，不要进行多余的操作，删除delete_node什么的下面有逻辑在做
+            //  if (node->left != Nil) { // 用左边节点代替自己与父节点连接
+            //      if (node->parent->left == node) { // 父节点的左边是自己
+            //          node->parent->left = node->left;
+            //          node->left->parent = node->parent;
+            //      } else if(node->parent->right == node){ // 父节点的右边是自己 防御性编程（怕自己哪里写错，直接else的话会更难排查)
+            //          node->parent->right = node->left;
+            //          node->left->parent = node->parent;
+            //      } else{
+            //          cout<<"WRONG.remove helper .node should be its parent's child "<<endl;
+            //      }
+            //  } else { // 用右边节点代替自己与父节点连接
+            //      if (node->parent->left == node) { // 父节点的左边是自己
+            //          node->parent->left = node->right;
+            //          node->right->parent = node->parent;
+            //      } else { // 父节点的右边是自己
+            //          node->parent->right = node->right;
+            //          node->right->parent = node->parent;
+            //      }
+            //  }
             delete_node = node;
         } else { // 有两个子节点，需要用后继替换(注意如果node->value是最大值，那么它必然不会有两个子节点) 。这个情况在下面的递归调用里中不会出现....
             Node* replace_node = find_successor(node);
             node->value = replace_node->value; // BUG 先替换再删除，先存着值，删完再替换。这个顺序可能会有影响吗？比如如果我再fixup里面用了节点的值来比较的话，
-            remove_helper(node, node->value); //递归调用。。。毕竟替换之后，就属于上面的两种情形了
+            delete_node = replace_node;
+            ////递归调用。。。毕竟替换之后，就属于上面的两种情形了，不会再次递归调用。
+            // 并不用递归调用，这里往下没有使用node变量了，只有在用delete_node, 于是把
+            // delete_node设为要删除的即可.
         }
 
         // BUG 我把 不替换 和 用后继替换  这两种情况耦合起来了。。。也许有问题。
         // 笔记上也需要修改
 
+        // FIXME 我有些case的与delete_node "断开" 的操作放在下面了，有些放在remove_fixup 里了
+        //  要删除节点 为根节点 以及 为红色节点  这两种情况是在 remove_helper 里写的
+
         // 对delete_node去分类讨论？？
-        if (delete_node->color == RED) { // 要删的为红色
-            delete delete_node;
-            return;
-        } else { // 要删的为黑色,必然是最底下的黑色
-            if (delete_node->left != Nil || delete_node->right != Nil) { // 有一个红色子节点
+        // step 2 : 删除节点和fixup
+        // 我的delete_node 是在旋转染色完了之后才delete的，拿它做一个指明位置的东西，不然在fixup里不好找删除位置。
+        // 反正删除中对delete_node没有任何要求，只需要它最后被删除，我中间用它做点事情应该也可以。
+        // FIXME 要记得在fixup里断开其他节点与delete_node的联系，比如更改parent left right 成员变量，有的可能要变成Nil
+        // FIXME 但是也许会出事
+        if (delete_node->color == RED) { // 要删的为红色(其实也就是0个子节点的红色。。因为红色不能只有一个子节点) // 这里不会是根节点
+            if (delete_node->left != Nil || delete_node->right != Nil) // 防御性编程。。。不应该有此情况的
+                cout << "WRONG. remove helper. 要删的红子节点不应该有孩子" << endl;
+            // 断开与delete_node的连接
+            if (delete_node == delete_node->parent->left) {
+                delete_node->parent->left = Nil;
+            } else {
+                assert(delete_node == delete_node->parent->right && "要么在左边要么在右边");
+                delete_node->parent->right = Nil;
+            }
+        } else { // 要删的为黑色,必然是最底下的黑色。并且由于两个子节点的在前面做过替换了，故只有1个红子，0个红子的情况
+            // TODO 这个逻辑应该放在哪里？？remove_helper 还是 remove_fixup??
+            if (delete_node->left != Nil || delete_node->right != Nil) { // 有一个红色子节点 （若出现错误，有俩红子节点，虽能混进去，但会在里面的else暴露出来)
                 if (delete_node->left != Nil) {
                     delete_node->left->parent = delete_node->parent;
                     if (delete_node == delete_node->parent->left) {
                         delete_node->parent->left = delete_node->left;
                     } else {
+                        assert(delete_node == delete_node->parent->right && "WRONG. remove_helper. 删除带一个红子节点的黑节点，错误1");
                         delete_node->parent->right = delete_node->left;
                     }
                     remove_fixup(delete_node->left);
                 } else {
+                    assert(delete_node->right != Nil && "WRONG. remove_helper. 删除带一个红子节点的黑节点，错误3");
                     delete_node->right->parent = delete_node->parent;
                     if (delete_node == delete_node->parent->left) {
                         delete_node->parent->left = delete_node->right;
                     } else {
+                        assert(delete_node == delete_node->parent->right && "WRONG. remove_helper. 删除带一个红子节点的黑节点，错误2");
                         delete_node->parent->right = delete_node->right;
                     }
                     remove_fixup(delete_node->right);
                 }
-                delete delete_node;
 
-            } else { // 0 个子节点 //BUG 可能需要处理一下根的情况
-                remove_fixup(delete_node); // 那些旋转什么的都在里面处理
-                delete delete_node;
+            } else { // 0 个子节点
+                if (delete_node == root) {
+                    delete delete_node; // 感觉写好if-else的分支的话，这个也可以不用写，最外面同一delete
+                    root = Nil;
+                    return;
+                }
+                remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
             }
         }
+        delete delete_node;
     }
 
     // 在删除之后 调用吗？
     void remove_fixup(Node* node)
-    {
+    { // 删带一个红子节点的黑节点的情况，最后把红节点传进remove_fixup来变个色。其他情况进来的应该是黑色的节点
         if (node->color == RED) {
             node->color = BLACK;
             return;
+        } else { // node是黑色 并且0个子节点
+            assert(node->left == Nil && node->right == Nil && "should have 0 child");
+            Node* father = node->parent;
+            Node* bro;
+            if (node == father->left) {
+                bro = father->right;
+            } else {
+                assert(node == father->right && "某个变量的parent或left或right成员可能没正确更改");
+                bro = father->left;
+            }
+            assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
+
+            if (bro->color == BLACK) { // 删除节点的兄弟是黑色
+                if (bro->left->color == RED || bro->right->color == RED) {
+                    Color prev_father_color = father->color;
+                    // 注意要与node断开连接...
+                    if (bro->left->color == RED) { // 左子节点为红色或者两个都为红色
+                        Node* child = bro->left;
+                        // case 1: LL, 防止访问空指针。。所以前面有那两个
+                        if (father->left && father->left->left && father->left == bro && father->left->left == child) {
+                            // node 是father->right
+                            father->right = Nil;
+                            // TODO right_ratate 是给insert写的，可能需要算一个例子看看能否用于remove
+                            father = right_rotate(father);
+                            // 染色
+                            father->color = prev_father_color;
+                            father->left->color = BLACK;
+                            father->right->color = BLACK;
+                        } else { // case 2: RL
+                            assert(father->right && father->right->left && father->right == bro && father->right->left == child && "只有LL和RL两种情况");
+                            father->left = Nil;
+                            bro = right_rotate(bro); // 似乎没必要更新bro 的，后面没再用了。。。。 算了,顺手写了吧还是
+                            father = left_rotate(father);
+                            father->color = prev_father_color;
+                            father->left->color = BLACK;
+                            father->right->color = BLACK;
+                        }
+                    } else { // 右子节点为红色
+                        assert(bro->right->color == RED);
+                        Node* child = bro->right;
+                        // case 3: LR
+                        if (father->left && father->left->right && father->left == bro && father->left->right == child) {
+                            father->right = Nil;
+                            bro = left_rotate(bro);
+                            father = right_rotate(father);
+                            father->color = prev_father_color;
+                            father->left->color = BLACK;
+                            father->right->color = BLACK;
+                        } else { // case 4: RR
+                            assert(father->right && father->right->right && father->right == bro && father->right->right == child && "只有LL和RL两种情况");
+                            father->left = Nil;
+                            father = left_rotate(father);
+                            father->color = prev_father_color;
+                            father->left->color = BLACK;
+                            father->right->color = BLACK;
+                        }
+                    }
+                } else { // 兄弟没有红子节点
+                    // 注意要与node断开连接...
+                    if (node == father->left) {
+                        father->left = Nil; // TODO = 与== 有时候写错啊，感觉需要检查一下;万一哪里没看到，调试时真不好找
+                    } else {
+                        assert(node == father->right && "要不然左边，要不然右边");
+                        father->right = Nil;
+                    }
+
+                    // 父节点向下合并
+                    if (father->color == RED) { // 父节点为红色
+
+                        father->color = BLACK;
+                        bro->color = RED;
+                    } else { // 父节点为黑色
+                        bro->color = RED;
+                        cout << "NOTE. 递归case" << endl;
+                        remove_fixup(father); // FIXME 递归..这个case是最看不懂的。努力看看。就是看看递归调用的时候会发生什么
+                    }
+                }
+            } else { // 删除节点的兄弟是红色 , 由于兄弟红色，故父节点是黑色(不能两个红)
+                // TODO 这里似乎也要用到完全的左旋右旋，需要看看会不会出问题
+                //  转变成兄弟为黑色(转完之后递归调用一下即会进入上面"删除节点的兄弟是黑色"的情况)
+                if (node == father->right) {
+                    // TODO 确实，前面那些地方似乎也没必要更新father之类的指针。。。。甚至rotate可以不要返回值.
+                    // 反正rotate里把树的结构调整对就好了。
+                    right_rotate(father);
+                    // 此时node 被转到下一层去了。。。
+                    assert(father == bro->right && "右旋有问题");
+                    // 下面的father和bro 是旋转前的
+                    father->color = RED;
+                    bro->color = BLACK;
+                    remove_fixup(node);
+                } else {
+                    assert(node == father->left && "node 与father 之间指针不正确");
+                    left_rotate(father);
+                    assert(father == bro->left && "左旋有问题");
+                    father->color = RED;
+                    bro->color = BLACK;
+                    remove_fixup(node);
+                }
+            }
         }
     }
 
@@ -392,7 +523,7 @@ public:
     void remove(int data)
     {
         if (!find(data)) {
-            cout << "remove data not found";
+            cout << "remove data not found"<<endl;
             return;
         }
         remove_helper(root, data);
@@ -406,97 +537,6 @@ public:
     void preorder_verbose();
 };
 
-int main()
-{
-    rbtree t;
-    srand(30);
-    vector<int> v;
-    int a = 0;
-    for (int i = 0; i < 4; i++) {
-        t.insert(4 - i);
-    }
-    int arr[5] = { 136, 491, 107, 440, 380 };
-    for (int i = 0; i < 5; i++) {
-        t.insert(arr[i]);
-        // }
-
-        // for (int i = 0; i < 5; i++) {
-        //     a = rand() % 500;
-        //     v.push_back(a);
-        //     cout << a << " " << endl;
-        //     t.insert(a);
-
-        // // verbose
-        // cout << "中序: " << endl;
-        // t.inorder_verbose();
-        // cout << endl;
-        // cout << "层序: " << endl;
-        // t.levelorder_verbose();
-        // cout << endl;
-        // cout << "前序: " << endl;
-        // t.preorder_verbose();
-
-        // cout << endl
-        //     << endl
-        //     << endl;
-    }
-    cout << endl;
-    cout << "输入: " << endl;
-    for (int num : v) {
-        cout << num << " ";
-    }
-    cout << endl;
-
-    // simple
-    cout << "中序: " << endl;
-    t.inorder();
-    cout << endl;
-    cout << "层序: " << endl;
-    t.levelorder();
-    cout << endl;
-    cout << "前序: " << endl;
-    t.preorder();
-    cout << endl
-         << endl;
-
-    // verbose
-    cout << "中序: " << endl;
-    t.inorder_verbose();
-    cout << endl;
-    cout << "层序: " << endl;
-    t.levelorder_verbose();
-    cout << endl;
-    cout << "前序: " << endl;
-    t.preorder_verbose();
-
-    cout << endl
-         << endl
-         << endl;
-
-    // cout << "删除: " << endl;
-    // for (int i = 0; i < 200; i++) {
-    //     a = rand() % 500;
-    //     cout << a << " ";
-    //     t.remove(a);
-    //     cout << endl;
-    //     cout << "层序: " << endl;
-    //     t.levelorder();
-    //     cout << endl;
-    //     cout << "中序: " << endl;
-    //     t.inorder();
-    // }
-    // cout << endl;
-    // cout << "中序: " << endl;
-    // t.inorder();
-    // cout << endl;
-    // cout << "层序: " << endl;
-    // t.levelorder();
-    // cout << endl;
-    // cout << "前序: " << endl;
-    // t.preorder();
-
-    return 0;
-}
 
 void rbtree::inorder()
 {
