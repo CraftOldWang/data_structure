@@ -39,7 +39,10 @@ class rbtree {
 private:
     Node* Nil;
     Node* root;
-
+    friend bool is_rbtree_right(const rbtree& t);
+    friend int count_path_black_num(const rbtree& t,Node* node);
+    friend bool path_black_num_right(const rbtree& t,Node* node, int black_num);
+    friend bool has_two_consective_red(const rbtree& t,Node* node);
 private:
     void destroy_helper(Node* node)
     {
@@ -367,7 +370,26 @@ private:
                     root = Nil;
                     return;
                 }
-                remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
+                //FIXME 在调试
+                Node* father = delete_node->parent;
+                Node* bro;
+                if (delete_node == father->left) {
+                    bro = father->right;
+                } else {
+                    assert(delete_node == father->right && "某个变量的parent或left或right成员可能没正确更改");
+                    bro = father->left;
+                }
+                assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
+
+                //遇到递归情况先就不删除了。
+                if(delete_node->color == BLACK && bro->color == BLACK 
+                    && bro->left->color != RED && bro->right->color != RED
+                    && father->color == BLACK ){
+                    return;
+                }else{
+                    remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
+                }
+                
             }
         }
         delete delete_node;
@@ -380,7 +402,7 @@ private:
             node->color = BLACK;
             return;
         } else { // node是黑色 并且0个子节点
-            assert(node->left == Nil && node->right == Nil && "should have 0 child");
+            // assert(node->left == Nil && node->right == Nil && "should have 0 child");
             Node* father = node->parent;
             Node* bro;
             if (node == father->left) {
@@ -451,9 +473,31 @@ private:
                         father->color = BLACK;
                         bro->color = RED;
                     } else { // 父节点为黑色
+                        //FIXME 先测试不带这个情况的时候，各个节点的父子对应关系是否正确。
                         bro->color = RED;
                         cout << "NOTE. 递归case" << endl;
+                        //FIXME 尝试用一些技巧性的东西来对此情况特殊处理，
+                        // 使其不会 因为递归里面node 会被与父节点断开连接而出事。应该保持连接。。。。。因为它实际上不会被删除
+                        Node* grandparent = father->parent;
+                        bool is_left_child = false;
+                        if (father == grandparent->left){
+                            is_left_child = true;
+                        }else{
+                            assert(father == grandparent->right && "这里真不应该出问题的");
+                            is_left_child = false;
+                        }
+
                         remove_fixup(father); // FIXME 递归..这个case是最看不懂的。努力看看。就是看看递归调用的时候会发生什么
+                        //FIXME我觉得。。。递归地remove_fixup 之后，father的parent是谁 是不会变的吧。
+                        father->parent = grandparent;
+                        if(is_left_child == true){
+                            assert(grandparent->left == Nil && "我断开连接了。。。所以才需要重连");
+                            grandparent->left = father;
+                        }else{
+                            assert(grandparent->right == Nil && "我断开连接了。。。所以才需要重连");
+                            grandparent->right = father;
+                        }
+
                     }
                 }
             } else { // 删除节点的兄弟是红色 , 由于兄弟红色，故父节点是黑色(不能两个红)
