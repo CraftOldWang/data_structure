@@ -6,7 +6,9 @@ def count_chinese_characters(text):
     return len(chinese_characters)
 
 # 测试字符串
+# 将文本粘贴到这里得到含中文的数量
 long_text ="""
+text
 
 """
 

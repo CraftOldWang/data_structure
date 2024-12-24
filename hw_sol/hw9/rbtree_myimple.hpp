@@ -370,26 +370,7 @@ private:
                     root = Nil;
                     return;
                 }
-                //FIXME 在调试
-                Node* father = delete_node->parent;
-                Node* bro;
-                if (delete_node == father->left) {
-                    bro = father->right;
-                } else {
-                    assert(delete_node == father->right && "某个变量的parent或left或right成员可能没正确更改");
-                    bro = father->left;
-                }
-                assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
-
-                //遇到递归情况先就不删除了。
-                if(delete_node->color == BLACK && bro->color == BLACK 
-                    && bro->left->color != RED && bro->right->color != RED
-                    && father->color == BLACK ){
-                    return;
-                }else{
-                    remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
-                }
-                
+                remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
             }
         }
         delete delete_node;
@@ -414,7 +395,7 @@ private:
             assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
 
             if (bro->color == BLACK) { // 删除节点的兄弟是黑色
-                if (bro->left->color == RED || bro->right->color == RED) {
+                if (bro->left->color == RED || bro->right->color == RED) {//兄弟有红子节点
                     Color prev_father_color = father->color;
                     // 注意要与node断开连接...
                     if (bro->left->color == RED) { // 左子节点为红色或者两个都为红色
@@ -473,11 +454,18 @@ private:
                         father->color = BLACK;
                         bro->color = RED;
                     } else { // 父节点为黑色
-                        //FIXME 先测试不带这个情况的时候，各个节点的父子对应关系是否正确。
+                        
                         bro->color = RED;
                         cout << "NOTE. 递归case" << endl;
+                        
+                        //递归的终结，如果father是根，染完色就结束了
+                        if(father == root){
+                            return;
+                        }
+                        //以下是有问题的部分remove_fixup(father); 是开始时的语句，其他是在打补丁。
                         //FIXME 尝试用一些技巧性的东西来对此情况特殊处理，
                         // 使其不会 因为递归里面node 会被与父节点断开连接而出事。应该保持连接。。。。。因为它实际上不会被删除
+                        //TODO 也许可以打印出出事前的层序中序前序，看看怎么回事。
                         Node* grandparent = father->parent;
                         bool is_left_child = false;
                         if (father == grandparent->left){
@@ -487,6 +475,12 @@ private:
                             is_left_child = false;
                         }
 
+                        if (father == root) {
+                            // delete delete_node; 
+                            // root = Nil;
+                            return;
+                        }
+                        
                         remove_fixup(father); // FIXME 递归..这个case是最看不懂的。努力看看。就是看看递归调用的时候会发生什么
                         //FIXME我觉得。。。递归地remove_fixup 之后，father的parent是谁 是不会变的吧。
                         father->parent = grandparent;

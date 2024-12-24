@@ -73,6 +73,37 @@ bool is_rbtree_right(const rbtree& t) // 没写复制构造和operator= 就别�
     return true;
 }
 
+void print_simple( rbtree& t){
+    // simple
+    cout << "中序: " << endl;
+    t.inorder();
+    cout << endl;
+    cout << "层序: " << endl;
+    t.levelorder();
+    cout << endl;
+    cout << "前序: " << endl;
+    t.preorder();
+    cout << endl
+        << endl
+        <<endl;
+}
+
+void print_verbose( rbtree& t){
+    // verbose
+    cout << "中序: " << endl;
+    t.inorder_verbose();
+    cout << endl;
+    cout << "层序: " << endl;
+    t.levelorder_verbose();
+    cout << endl;
+    cout << "前序: " << endl;
+    t.preorder_verbose();
+
+    cout << endl
+         << endl
+         << endl;
+}
+
 void test1()
 {
     rbtree t;
@@ -174,8 +205,8 @@ void test2()
 
     vector<int> v_delete;
 
-    for (int i = 0; i < 300; i++) {
-        a = rand() % 500;
+    for (int i = 0; i < 300000; i++) {
+        a = rand() % 50000;
         v.push_back(a);
         cout << a << " " << endl;
         t.insert(a);
@@ -183,19 +214,9 @@ void test2()
             cout << "红黑树写错了" << endl;
             return;
         }
-        // // verbose
-        // cout << "中序: " << endl;
-        // t.inorder_verbose();
-        // cout << endl;
-        // cout << "层序: " << endl;
-        // t.levelorder_verbose();
-        // cout << endl;
-        // cout << "前序: " << endl;
-        // t.preorder_verbose();
 
-        // cout << endl
-        //     << endl
-        //     << endl;
+        // print_verbose(t);
+
     }
     cout << endl;
     cout << "输入: " << endl;
@@ -204,48 +225,23 @@ void test2()
     }
     cout << endl;
 
-    // // simple
-    // cout << "中序: " << endl;
-    // t.inorder();
-    // cout << endl;
-    // cout << "层序: " << endl;
-    // t.levelorder();
-    // cout << endl;
-    // cout << "前序: " << endl;
-    // t.preorder();
-    // cout << endl
-    //      << endl;
+    // print_simple(t);
 
-    // verbose
-    cout << "中序: " << endl;
-    t.inorder_verbose();
-    cout << endl;
-    cout << "层序: " << endl;
-    t.levelorder_verbose();
-    cout << endl;
-    cout << "前序: " << endl;
-    t.preorder_verbose();
-
-    cout << endl
-         << endl
-         << endl;
+    print_verbose(t);
 
     cout << "删除: " << endl;
-    for (int i = 0; i < 1000; i++) {
-        a = rand() % 500;
+    for (int i = 0; i < 10000; i++) {
+        
+        a = rand() % 50000;
         cout << "删除: " << a << endl;
         v_delete.push_back(a);
         t.remove(a);
-        // cout << endl;
-        // cout << "层序: " << endl;
-        // t.levelorder_verbose();
-        // cout << endl;
-        // cout << "中序: " << endl;
-        // t.inorder_verbose();
+
         if (!is_rbtree_right(t)) {
             cout << "红黑树写错了" << endl;
             return;
         }
+        // print_verbose(t);
     }
 
     for (int num : v_delete) {
@@ -253,15 +249,7 @@ void test2()
     }
     cout << endl;
 
-    cout << endl;
-    cout << "中序: " << endl;
-    t.inorder_verbose();
-    cout << endl;
-    cout << "层序: " << endl;
-    t.levelorder_verbose();
-    cout << endl;
-    cout << "前序: " << endl;
-    t.preorder_verbose();
+    print_verbose(t);
 }
 
 int main()
