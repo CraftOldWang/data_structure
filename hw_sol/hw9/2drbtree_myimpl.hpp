@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+bool ISDEBUG = true;
+bool REMOVE_NOT_FOUND_REPORT = true;
 // TODO ask助教 这么多情况，我怎么debug啊？？我只能想到用已有的map来搞
 //  另外还要特别多的调试语句？？？ 难道说应该一次就写对？？怎么做到 ？
 //  提前讨论清楚分类？？ 但是代码实现又比纸上讨论的更琐碎，有很多细节要额外考虑。
@@ -83,7 +85,8 @@ private:
         if (root == Nil) {
             root = buynode(data);
             insert_fixup(root);
-            cout << "insert case 1:empty tree" << endl;
+            if(ISDEBUG)
+                cout << "insert case 1:empty tree" << endl;
             return;
         }
 
@@ -93,19 +96,17 @@ private:
                 insert_helper(node->left, data);
                 return;
             }
-        } else if (data > node->value) { // 不会有等于的情况
+        } else { //FIXME 等于的情况放右边， 与下面更改parent的连接
             if (node->right != Nil) {
                 insert_helper(node->right, data);
                 return;
             }
-        } else {
-            cout << "WRONG. insert data == node->value. should not happen " << endl;
         }
 
         Node* son = buynode(data);
         son->parent = node;
         Node* parent = node;
-
+        //FIXME 这里把等于的情况放在右边了，所以上面也要
         // newnode与parent连接一下
         if (data < parent->value) {
             parent->left = son;
@@ -119,10 +120,12 @@ private:
     {
         if (node == root) {
             node->color = BLACK;
-            cout << "fix case 1:node == root" << endl;
+            if(ISDEBUG)
+                cout << "fix case 1:node == root" << endl;
             return;
         } else if (node->parent->color == BLACK) { // 父节点黑色,不需要调整
-            cout << "fix case 2: parent black" << endl;
+            if(ISDEBUG)
+                cout << "fix case 2: parent black" << endl;
             return;
         } else { // 父节点红色，有叔叔. 由于父节点红色,故祖父节点存在且黑色
             Node* parent = node->parent;
@@ -148,14 +151,16 @@ private:
                 //      need_updata_root = true;
 
                 if (grandparent->left == parent && parent->left == node) { // LL
-                    cout << "fix case 3-1: parent red, uncle black, LL" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-1: parent red, uncle black, LL" << endl;
                     grandparent = right_rotate(grandparent);
                     // 染色
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->left == parent && parent->right == node) { // LR
-                    cout << "fix case 3-2: parent red, uncle black, LR" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-2: parent red, uncle black, LR" << endl;
                     parent = left_rotate(parent); // 先以父节点为轴左旋
                     grandparent = right_rotate(grandparent); // 再以祖父右旋
                     // 染色
@@ -163,14 +168,16 @@ private:
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->right == parent && parent->left == node) { // RL
-                    cout << "fix case 3-3: parent red, uncle black, RL" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-3: parent red, uncle black, RL" << endl;
                     parent = right_rotate(parent);
                     grandparent = left_rotate(grandparent);
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->right == parent && parent->right == node) { // RR
-                    cout << "fix case 3-4: parent red, uncle black, RR" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-4: parent red, uncle black, RR" << endl;
                     grandparent = left_rotate(grandparent);
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
@@ -187,7 +194,8 @@ private:
                 // 放到rotate里了
                 // if(need_updata_root)root = grandparent;// 也许下面的红叔叔情况也要写这个?并不需要
             } else { // 叔叔是红色的
-                cout << "fix case 4: parent red,uncle red" << endl;
+                if(ISDEBUG)
+                    cout << "fix case 4: parent red,uncle red" << endl;
                 grandparent->color = RED;
                 parent->color = BLACK;
                 uncle->color = BLACK;
@@ -214,14 +222,17 @@ private:
         // 如果node不是根,需要更新父节点的left或者right
         // 如果是根,需要更新root
         if (node == root) {
-            cout << "Rrotate case 1: node == root" << endl;
+            if(ISDEBUG)
+                cout << "Rrotate case 1: node == root" << endl;
             root = child;
         } else { // node有父亲，需要更新父亲的left 或者right
             if (node == node->parent->left) {
-                cout << "Rrotate case 2: parent's left child" << endl;
+                if(ISDEBUG)
+                    cout << "Rrotate case 2: parent's left child" << endl;
                 node->parent->left = child;
             } else if (node == node->parent->right) {
-                cout << "Rrotate case 3: parent's right child" << endl;
+                if(ISDEBUG)
+                    cout << "Rrotate case 3: parent's right child" << endl;
                 node->parent->right = child;
             } else {
                 cout << "WRONG. right_rotate: node should be its parent's child" << endl;
@@ -242,14 +253,17 @@ private:
         // 需要更新的有,node 的parent和right; (如果node不是root)node的parent 的left 或者right; child 的parent和left,
         Node* child = node->right;
         if (node == root) {
-            cout << "Lrotate case 1: node == root" << endl;
+            if(ISDEBUG)
+                cout << "Lrotate case 1: node == root" << endl;
             root = child;
         } else { // node有父亲，需要更新父亲的left 或者right
             if (node == node->parent->left) {
-                cout << "Lrotate case 2: parent's left child" << endl;
+                if(ISDEBUG)
+                    cout << "Lrotate case 2: parent's left child" << endl;
                 node->parent->left = child;
             } else if (node == node->parent->right) {
-                cout << "Lrotate case 3: parent's right child" << endl;
+                if(ISDEBUG)
+                    cout << "Lrotate case 3: parent's right child" << endl;
                 node->parent->right = child;
             } else {
                 cout << "WRONG. left_rotate: node should be its parent's child";
@@ -312,7 +326,8 @@ private:
             Node* replace_node = find_successor(node);
             node->value = replace_node->value; // BUG 先替换再删除，先存着值，删完再替换。这个顺序可能会有影响吗？比如如果我再fixup里面用了节点的值来比较的话，
             delete_node = replace_node;
-            cout<<"需要替换的情况"<<endl;
+            if(ISDEBUG)
+                cout<<"需要替换的情况"<<endl;
             ////递归调用。。。毕竟替换之后，就属于上面的两种情形了，不会再次递归调用。
             // 并不用递归调用，这里往下没有使用node变量了，只有在用delete_node, 于是把
             // delete_node设为要删除的即可.
@@ -456,7 +471,8 @@ private:
                     } else { // 父节点为黑色
                         
                         bro->color = RED;
-                        cout << "NOTE. 递归case" << endl;
+                        if(ISDEBUG)
+                            cout << "NOTE. 递归case" << endl;
                         
                         //递归的终结，如果father是根，染完色就结束了
                         if(father == root){
@@ -554,18 +570,23 @@ public:
 
     void insert(int data)
     {
-        if (find(data))
-            return;
+        //FIXME 正在改成drbtree, 可存重复值
+        // if (find(data))
+        //     return;
         insert_helper(root, data);
     }
 
     void remove(int data)
     {
-        if (!find(data)) {
-            cout << "remove data not found"<<endl;
-            return;
+        while(1){
+            if (!find(data)) {
+                if(REMOVE_NOT_FOUND_REPORT)
+                    cout << "remove data not found"<<endl;
+                return;//在这里跳出循环，删到在树中找不到data
+            }
+            remove_helper(root, data);
         }
-        remove_helper(root, data);
+
     }
 
     void inorder();

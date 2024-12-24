@@ -1,7 +1,12 @@
-#include "rbtree_myimple.hpp"
+#include "2drbtree_myimpl.hpp"
 #include <iostream>
 
 using namespace std;
+
+bool VERBOSE =false;
+int INSERT_NUM =300 ;
+int REMOVE_NUM = 100;
+int NUM_RANGE = 500;//0-NUM_RANGE
 // 节点是红色或黑色的。
 // 根节点是黑色的。
 // 所有叶节点（即 NIL 节点）都是黑色的。
@@ -204,11 +209,11 @@ void test2()
     int a = 0;
 
     vector<int> v_delete;
-
-    for (int i = 0; i < 300000; i++) {
-        a = rand() % 50000;
+    
+    for (int i = 0; i < INSERT_NUM; i++) {
+        a = rand() % NUM_RANGE;
         v.push_back(a);
-        cout << a << " " << endl;
+        // cout << a << " " << endl;
         t.insert(a);
         if (!is_rbtree_right(t)) {
             cout << "红黑树写错了" << endl;
@@ -225,15 +230,16 @@ void test2()
     }
     cout << endl;
 
-    // print_simple(t);
-
-    print_verbose(t);
-
+    
+    if(VERBOSE)
+        print_verbose(t);
+    else
+        print_simple(t);
     cout << "删除: " << endl;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < REMOVE_NUM; i++) {
         
-        a = rand() % 50000;
-        cout << "删除: " << a << endl;
+        a = rand() % NUM_RANGE;
+        // cout << "删除: " << a << endl;
         v_delete.push_back(a);
         t.remove(a);
 
@@ -248,8 +254,10 @@ void test2()
         cout << num << " ";
     }
     cout << endl;
-
-    print_verbose(t);
+    if(VERBOSE)
+        print_verbose(t);
+    else   
+        print_simple(t);
 }
 
 int main()

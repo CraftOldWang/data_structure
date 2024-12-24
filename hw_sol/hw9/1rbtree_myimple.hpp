@@ -1,4 +1,3 @@
-//既然我用了git 来保存这个版本。。。那这个就没用了
 #pragma once 
 #include <cassert>
 #include <ctime>
@@ -6,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+bool ISDEBUG = false;
+bool REMOVE_NOT_FOUND_REPORT = false;
 // TODO ask助教 这么多情况，我怎么debug啊？？我只能想到用已有的map来搞
 //  另外还要特别多的调试语句？？？ 难道说应该一次就写对？？怎么做到 ？
 //  提前讨论清楚分类？？ 但是代码实现又比纸上讨论的更琐碎，有很多细节要额外考虑。
@@ -84,7 +85,8 @@ private:
         if (root == Nil) {
             root = buynode(data);
             insert_fixup(root);
-            cout << "insert case 1:empty tree" << endl;
+            if(ISDEBUG)
+                cout << "insert case 1:empty tree" << endl;
             return;
         }
 
@@ -120,10 +122,12 @@ private:
     {
         if (node == root) {
             node->color = BLACK;
-            cout << "fix case 1:node == root" << endl;
+            if(ISDEBUG)
+                cout << "fix case 1:node == root" << endl;
             return;
         } else if (node->parent->color == BLACK) { // 父节点黑色,不需要调整
-            cout << "fix case 2: parent black" << endl;
+            if(ISDEBUG)
+                cout << "fix case 2: parent black" << endl;
             return;
         } else { // 父节点红色，有叔叔. 由于父节点红色,故祖父节点存在且黑色
             Node* parent = node->parent;
@@ -149,14 +153,16 @@ private:
                 //      need_updata_root = true;
 
                 if (grandparent->left == parent && parent->left == node) { // LL
-                    cout << "fix case 3-1: parent red, uncle black, LL" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-1: parent red, uncle black, LL" << endl;
                     grandparent = right_rotate(grandparent);
                     // 染色
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->left == parent && parent->right == node) { // LR
-                    cout << "fix case 3-2: parent red, uncle black, LR" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-2: parent red, uncle black, LR" << endl;
                     parent = left_rotate(parent); // 先以父节点为轴左旋
                     grandparent = right_rotate(grandparent); // 再以祖父右旋
                     // 染色
@@ -164,14 +170,16 @@ private:
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->right == parent && parent->left == node) { // RL
-                    cout << "fix case 3-3: parent red, uncle black, RL" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-3: parent red, uncle black, RL" << endl;
                     parent = right_rotate(parent);
                     grandparent = left_rotate(grandparent);
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
                     grandparent->right->color = RED;
                 } else if (grandparent->right == parent && parent->right == node) { // RR
-                    cout << "fix case 3-4: parent red, uncle black, RR" << endl;
+                    if(ISDEBUG)
+                        cout << "fix case 3-4: parent red, uncle black, RR" << endl;
                     grandparent = left_rotate(grandparent);
                     grandparent->color = BLACK;
                     grandparent->left->color = RED;
@@ -188,7 +196,8 @@ private:
                 // 放到rotate里了
                 // if(need_updata_root)root = grandparent;// 也许下面的红叔叔情况也要写这个?并不需要
             } else { // 叔叔是红色的
-                cout << "fix case 4: parent red,uncle red" << endl;
+                if(ISDEBUG)
+                    cout << "fix case 4: parent red,uncle red" << endl;
                 grandparent->color = RED;
                 parent->color = BLACK;
                 uncle->color = BLACK;
@@ -215,14 +224,17 @@ private:
         // 如果node不是根,需要更新父节点的left或者right
         // 如果是根,需要更新root
         if (node == root) {
-            cout << "Rrotate case 1: node == root" << endl;
+            if(ISDEBUG)
+                cout << "Rrotate case 1: node == root" << endl;
             root = child;
         } else { // node有父亲，需要更新父亲的left 或者right
             if (node == node->parent->left) {
-                cout << "Rrotate case 2: parent's left child" << endl;
+                if(ISDEBUG)
+                    cout << "Rrotate case 2: parent's left child" << endl;
                 node->parent->left = child;
             } else if (node == node->parent->right) {
-                cout << "Rrotate case 3: parent's right child" << endl;
+                if(ISDEBUG)
+                    cout << "Rrotate case 3: parent's right child" << endl;
                 node->parent->right = child;
             } else {
                 cout << "WRONG. right_rotate: node should be its parent's child" << endl;
@@ -243,14 +255,17 @@ private:
         // 需要更新的有,node 的parent和right; (如果node不是root)node的parent 的left 或者right; child 的parent和left,
         Node* child = node->right;
         if (node == root) {
-            cout << "Lrotate case 1: node == root" << endl;
+            if(ISDEBUG)
+                cout << "Lrotate case 1: node == root" << endl;
             root = child;
         } else { // node有父亲，需要更新父亲的left 或者right
             if (node == node->parent->left) {
-                cout << "Lrotate case 2: parent's left child" << endl;
+                if(ISDEBUG)
+                    cout << "Lrotate case 2: parent's left child" << endl;
                 node->parent->left = child;
             } else if (node == node->parent->right) {
-                cout << "Lrotate case 3: parent's right child" << endl;
+                if(ISDEBUG)
+                    cout << "Lrotate case 3: parent's right child" << endl;
                 node->parent->right = child;
             } else {
                 cout << "WRONG. left_rotate: node should be its parent's child";
@@ -313,7 +328,8 @@ private:
             Node* replace_node = find_successor(node);
             node->value = replace_node->value; // BUG 先替换再删除，先存着值，删完再替换。这个顺序可能会有影响吗？比如如果我再fixup里面用了节点的值来比较的话，
             delete_node = replace_node;
-            cout<<"需要替换的情况"<<endl;
+            if(ISDEBUG)
+                cout<<"需要替换的情况"<<endl;
             ////递归调用。。。毕竟替换之后，就属于上面的两种情形了，不会再次递归调用。
             // 并不用递归调用，这里往下没有使用node变量了，只有在用delete_node, 于是把
             // delete_node设为要删除的即可.
@@ -371,26 +387,7 @@ private:
                     root = Nil;
                     return;
                 }
-                //FIXME 在调试
-                Node* father = delete_node->parent;
-                Node* bro;
-                if (delete_node == father->left) {
-                    bro = father->right;
-                } else {
-                    assert(delete_node == father->right && "某个变量的parent或left或right成员可能没正确更改");
-                    bro = father->left;
-                }
-                assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
-
-                //遇到递归情况先就不删除了。
-                if(delete_node->color == BLACK && bro->color == BLACK 
-                    && bro->left->color != RED && bro->right->color != RED
-                    && father->color == BLACK ){
-                    return;
-                }else{
-                    remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
-                }
-                
+                remove_fixup(delete_node); // 那些旋转什么的都在里面处理 , 删除的话最后再来吧。
             }
         }
         delete delete_node;
@@ -415,7 +412,7 @@ private:
             assert(bro != Nil && "由于路径上经过的黑节点数量一样，这个bro不可能是Nil");
 
             if (bro->color == BLACK) { // 删除节点的兄弟是黑色
-                if (bro->left->color == RED || bro->right->color == RED) {
+                if (bro->left->color == RED || bro->right->color == RED) {//兄弟有红子节点
                     Color prev_father_color = father->color;
                     // 注意要与node断开连接...
                     if (bro->left->color == RED) { // 左子节点为红色或者两个都为红色
@@ -474,11 +471,19 @@ private:
                         father->color = BLACK;
                         bro->color = RED;
                     } else { // 父节点为黑色
-                        //FIXME 先测试不带这个情况的时候，各个节点的父子对应关系是否正确。
+                        
                         bro->color = RED;
-                        cout << "NOTE. 递归case" << endl;
+                        if(ISDEBUG)
+                            cout << "NOTE. 递归case" << endl;
+                        
+                        //递归的终结，如果father是根，染完色就结束了
+                        if(father == root){
+                            return;
+                        }
+                        //以下是有问题的部分remove_fixup(father); 是开始时的语句，其他是在打补丁。
                         //FIXME 尝试用一些技巧性的东西来对此情况特殊处理，
                         // 使其不会 因为递归里面node 会被与父节点断开连接而出事。应该保持连接。。。。。因为它实际上不会被删除
+                        //TODO 也许可以打印出出事前的层序中序前序，看看怎么回事。
                         Node* grandparent = father->parent;
                         bool is_left_child = false;
                         if (father == grandparent->left){
@@ -488,6 +493,12 @@ private:
                             is_left_child = false;
                         }
 
+                        if (father == root) {
+                            // delete delete_node; 
+                            // root = Nil;
+                            return;
+                        }
+                        
                         remove_fixup(father); // FIXME 递归..这个case是最看不懂的。努力看看。就是看看递归调用的时候会发生什么
                         //FIXME我觉得。。。递归地remove_fixup 之后，father的parent是谁 是不会变的吧。
                         father->parent = grandparent;
@@ -569,7 +580,8 @@ public:
     void remove(int data)
     {
         if (!find(data)) {
-            cout << "remove data not found"<<endl;
+            if(REMOVE_NOT_FOUND_REPORT)
+                cout << "remove data not found"<<endl;
             return;
         }
         remove_helper(root, data);
