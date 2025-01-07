@@ -3,7 +3,10 @@
 
 using namespace std;
 
-bool VERBOSE =false;
+bool VERBOSE = false;
+int INSERT_NUM = 100;
+int REMOVE_NUM = 50;
+int NUM_RANGE = 50; // 0-NUM_RANGE
 // 节点是红色或黑色的。
 // 根节点是黑色的。
 // 所有叶节点（即 NIL 节点）都是黑色的。
@@ -75,7 +78,8 @@ bool is_rbtree_right(const rbtree& t) // 没写复制构造和operator= 就别�
     return true;
 }
 
-void print_simple( rbtree& t){
+void print_simple(rbtree& t)
+{
     // simple
     cout << "中序: " << endl;
     t.inorder();
@@ -86,11 +90,12 @@ void print_simple( rbtree& t){
     cout << "前序: " << endl;
     t.preorder();
     cout << endl
-        << endl
-        <<endl;
+         << endl
+         << endl;
 }
 
-void print_verbose( rbtree& t){
+void print_verbose(rbtree& t)
+{
     // verbose
     cout << "中序: " << endl;
     t.inorder_verbose();
@@ -207,8 +212,8 @@ void test2()
 
     vector<int> v_delete;
 
-    for (int i = 0; i < 30000; i++) {
-        a = rand() % 5000;
+    for (int i = 0; i < INSERT_NUM; i++) {
+        a = rand() % NUM_RANGE;
         v.push_back(a);
         // cout << a << " " << endl;
         t.insert(a);
@@ -218,7 +223,6 @@ void test2()
         }
 
         // print_verbose(t);
-
     }
     cout << endl;
     cout << "输入: " << endl;
@@ -227,15 +231,14 @@ void test2()
     }
     cout << endl;
 
-    
-    if(VERBOSE)
+    if (VERBOSE)
         print_verbose(t);
     else
         print_simple(t);
     cout << "删除: " << endl;
-    for (int i = 0; i < 10000; i++) {
-        
-        a = rand() % 5000;
+    for (int i = 0; i < REMOVE_NUM; i++) {
+
+        a = rand() % NUM_RANGE;
         // cout << "删除: " << a << endl;
         v_delete.push_back(a);
         t.remove(a);
@@ -251,9 +254,9 @@ void test2()
         cout << num << " ";
     }
     cout << endl;
-    if(VERBOSE)
+    if (VERBOSE)
         print_verbose(t);
-    else   
+    else
         print_simple(t);
 }
 

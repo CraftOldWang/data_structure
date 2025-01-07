@@ -32,10 +32,10 @@ mymaxheap<T>::mymaxheap(int heapmaxlen, const T& maxelem, const T& minelem)
     heap = new T[2 * heapmaxlen + 2]; // 不使用heap[0];所以不给他初始化了是吗？？？？
     heap[0] = maxelem;
     //FIXME 为了提升push的性能,每次push完不维护minelem
-    for(int i=1;i<2*heapmaxlen+1;i++){
-        heap[i] = minelem;
-    }
-    // heap[1] = minelem; // 为了方便操作，不用每次都判断是否越界; [n+1, 2*n +1]中放min, 创建时候n=0
+    // for(int i=1;i<2*heapmaxlen+1;i++){
+    //     heap[i] = minelem;
+    // }
+    heap[1] = minelem; // 为了方便操作，不用每次都判断是否越界; [n+1, 2*n +1]中放min, 创建时候n=0
 }
 
 template <class T>
@@ -68,7 +68,7 @@ void mymaxheap<T>::push(const T& data)
 
     // minelem的复制,此时heapsize是原来的heapsize+1,为minelem
     heapsize += 1;
-    // heap[2 * heapsize + 1] = heap[2 * heapsize] = heap[heapsize];
+    heap[2 * heapsize + 1] = heap[2 * heapsize] = heap[heapsize];
 
     while (data > heap[parentindex]) // 不用>=是为了稳定？能不改就不改
     {

@@ -7,8 +7,8 @@
 
 bool ISDEBUG = false;
 bool REMOVE_NOT_FOUND_REPORT = false;
-// TODO ask助教 这么多情况，我怎么debug啊？？我只能想到用已有的map来搞
-//  另外还要特别多的调试语句？？？ 难道说应该一次就写对？？怎么做到 ？
+// TODO ask助教 这么多情况，我怎么debug啊？？
+//  另外还要特别多的调试语句？？？ 难道说应该一次就写对？？怎么做到 E？
 //  提前讨论清楚分类？？ 但是代码实现又比纸上讨论的更琐碎，有很多细节要额外考虑。
 // BUG 检查一下删除之后 是否更新了 被删除节点的parent的 left right 成员变量
 
